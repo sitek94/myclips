@@ -68,15 +68,11 @@ private struct TopBar: View {
             BoardChips(model: model, focus: focus)
             Spacer(minLength: 0)
             PermissionButtons(app: app)
-            Menu {
-                SettingsMenu(app: app)
-            } label: {
-                Image(systemName: "gearshape")
+            GearMenu(appName: "myClips", openSettings: app.showSettings) {
+                AppActions(app: app)
             }
             .menuStyle(.button)
             .buttonStyle(.glass)
-            .menuIndicator(.hidden)
-            .fixedSize()
         }
         .padding(.horizontal, .space4)
     }

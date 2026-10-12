@@ -1,16 +1,17 @@
 import AppKit
 import MyClipsCore
+import MyKit
 import SwiftUI
 
 @main
 struct MyClipsApp: App {
     @NSApplicationDelegateAdaptor private var delegate: AppDelegate
-    // Without this binding SwiftUI quits the app when its only scene, this item, is hidden in System Settings → Menu Bar.
-    @State private var menuBarItemInserted = true
 
     var body: some Scene {
-        MenuBarExtra("myClips", systemImage: "list.clipboard", isInserted: $menuBarItemInserted) {
-            SettingsMenu(app: delegate.app)
+        MenuBarItem("myClips", systemImage: "list.clipboard") {
+            AppActions(app: delegate.app)
+            Divider()
+            AppMenuItems(appName: "myClips", openSettings: delegate.app.showSettings)
         }
     }
 }
@@ -33,13 +34,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-/// Shared by the menu bar item and the panel's gear button.
-struct SettingsMenu: View {
+/// myClips' own menu items, shared by the menu bar item and the shelf's gear menu.
+struct AppActions: View {
     @Bindable var app: AppModel
 
     var body: some View {
         Button("Open myClips") { app.panel.show() }
-            .keyboardShortcut("v", modifiers: [.command, .control, .option, .shift])
+            .keyboardShortcut(app.openShortcut.shortcut?.menuShortcut)
         Toggle("Pause Capture", isOn: $app.paused)
         Divider()
         if app.needsClipboardAccess {
@@ -48,14 +49,23 @@ struct SettingsMenu: View {
         if !app.accessibilityTrusted {
             Button("Enable Direct Paste…") { app.requestAccessibility() }
         }
-        if !app.hotKeyRegistered {
-            Text("Hyper-V (⌃⌥⇧⌘V) is taken by another app")
+        if let shortcut = app.openShortcut.shortcut, !app.openShortcut.isRegistered {
+            Text("\(shortcut.displayText) is used by another app")
         }
-        Button("Settings…") { app.showSettings() }
-            .keyboardShortcut(",")
         Button("Clear History…") { app.clearHistory() }
-        Divider()
-        Button("Quit myClips") { NSApp.terminate(nil) }
-            .keyboardShortcut("q")
+    }
+}
+
+extension Shortcut {
+    /// The global shortcut as a menu key equivalent, so menus show the shortcut the user set.
+    /// Nil for keys that a menu cannot show as one character.
+    var menuShortcut: KeyboardShortcut? {
+        guard let name = keys.last, name.count == 1, let character = name.lowercased().first else { return nil }
+        var modifiers: EventModifiers = []
+        if modifierFlags.contains(.control) { modifiers.insert(.control) }
+        if modifierFlags.contains(.option) { modifiers.insert(.option) }
+        if modifierFlags.contains(.shift) { modifiers.insert(.shift) }
+        if modifierFlags.contains(.command) { modifiers.insert(.command) }
+        return KeyboardShortcut(KeyEquivalent(character), modifiers: modifiers)
     }
 }

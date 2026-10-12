@@ -30,14 +30,14 @@ macOS 26 asks before an app reads the clipboard programmatically. myClips needs 
 
 ## The shelf
 
-A non-activating `NSPanel` (titled, title bar hidden — borderless non-activating panels don't reliably become key) placed along the bottom of the screen under the mouse. It takes keyboard focus **without activating myClips**, so the app you were in stays frontmost and receives the paste.
+A myKit `FloatingPanel` (a titled, non-activating `NSPanel` with the title bar hidden; see [decision 002](decisions/002-non-activating-panel.md)) placed along the bottom of the screen under the mouse. It takes keyboard focus **without activating myClips**, so the app you were in stays frontmost and receives the paste.
 
 - Keys go through one local event monitor in `PanelController.handle`; letters are matched by character so shortcuts follow the keyboard layout.
-- It closes on `Esc`, the hotkey, a paste, a click outside or another app activating — but not when the screenshot UI (`screencaptureui`) is up, so you can screenshot it.
+- It closes on `Esc`, the hotkey, a paste, a click outside or another app activating — but not when the screenshot UI (`screencaptureui`) is up, so you can screenshot it. `FloatingPanel` watches the clicks and app switches; `PanelController` handles the keys.
 - One `FocusState` for the whole panel; separate ones fought over the first responder.
 - One tap handler per card reads the click count; a separate double-tap gesture delayed every single click.
 
-The global hotkey uses Carbon's `RegisterEventHotKey`, which needs no permission.
+The global shortcut is a myKit `GlobalShortcut` (Carbon's `RegisterEventHotKey`, which needs no permission). It is ✦ V (Hyper+V) by default; Settings → General changes it.
 
 ## Pasting
 

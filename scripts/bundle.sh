@@ -39,7 +39,7 @@ bundle() {
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>$VERSION</string>
     <key>CFBundleVersion</key><string>$BUILD</string>
-    <key>MyClipsCommit</key><string>$COMMIT</string>
+    <key>GitCommit</key><string>$COMMIT</string>
     <key>LSMinimumSystemVersion</key><string>26.0</string>
     <key>LSUIElement</key><true/>
     <key>CFBundleIconName</key><string>AppIcon</string>

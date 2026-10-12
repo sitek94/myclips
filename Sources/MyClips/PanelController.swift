@@ -1,37 +1,8 @@
 import AppKit
 import Carbon.HIToolbox
+import MyKit
 import SwiftUI
 import os
-
-/// Borderless panel that takes keyboard focus without activating myClips,
-/// so the app you were in stays frontmost and receives the paste.
-final class ShelfPanel: NSPanel {
-    init() {
-        super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 1200, height: PanelController.height),
-            // Titled (with the title bar hidden): borderless non-activating panels don't reliably become key.
-            styleMask: [.nonactivatingPanel, .titled, .fullSizeContentView],
-            backing: .buffered, defer: false
-        )
-        titleVisibility = .hidden
-        titlebarAppearsTransparent = true
-        for button in [NSWindow.ButtonType.closeButton, .miniaturizeButton, .zoomButton] {
-            standardWindowButton(button)?.isHidden = true
-        }
-        isMovable = false
-        becomesKeyOnlyIfNeeded = false
-        isFloatingPanel = true
-        level = .floating
-        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
-        isOpaque = false
-        backgroundColor = .clear
-        hasShadow = true
-        hidesOnDeactivate = false
-        isReleasedWhenClosed = false
-    }
-
-    override var canBecomeKey: Bool { true }
-}
 
 /// Floats the preview above the shelf without taking keyboard focus from it.
 final class PreviewPanel: NSPanel {
@@ -52,32 +23,38 @@ final class PreviewPanel: NSPanel {
     override var canBecomeKey: Bool { false }
 }
 
-/// Shows the shelf along the bottom of the screen under the mouse.
+/// Shows the shelf along the bottom of the screen under the mouse, in a myKit `FloatingPanel`:
+/// it takes typing without activating myClips, so the app you were in stays frontmost and receives the paste.
 /// Closes on Esc, the hotkey, a paste, a click outside, or another app activating;
-/// it deliberately stays open when focus moves to system UI such as the screenshot tool.
+/// it stays open when focus moves to system UI such as the screenshot tool.
 final class PanelController {
     static let height: CGFloat = 330
     static let margin: CGFloat = 8
 
     let model: PanelModel
     weak var app: AppModel? {
-        didSet { if let app { host.rootView = PanelView(model: model, app: app, openPreview: { [weak self] in self?.setPreview(true) }) } }
+        didSet {
+            guard let app else { return }
+            panel.setContent(tint: .brand) {
+                PanelView(model: model, app: app, openPreview: { [weak self] in self?.setPreview(true) })
+            }
+        }
     }
-    private let panel = ShelfPanel()
-    private let host: NSHostingView<PanelView?>
+    // UI test runs happen on a Mac someone is using; their clicks must not close the shelf.
+    private let panel = FloatingPanel(
+        contentRect: NSRect(x: 0, y: 0, width: 1200, height: PanelController.height),
+        options: .init(closesOnOutsideClick: !AppModel.uiTest)
+    )
     private let previewPanel = PreviewPanel()
-    private var monitors: [Any] = []
-    private var activationObserver: NSObjectProtocol?
+    private var keyMonitor: Any?
     private let log = Logger(subsystem: "dev.maciek.myclips", category: "panel")
 
     init(model: PanelModel) {
         self.model = model
-        host = NSHostingView(rootView: nil)
-        host.sizingOptions = []
-        panel.contentView = host
-        let preview = NSHostingView(rootView: PreviewView(model: model))
+        let preview = NSHostingView(rootView: PreviewView(model: model).tint(.brand))
         preview.sizingOptions = []
         previewPanel.contentView = preview
+        panel.onClose = { [weak self] reason in self?.didClose(reason) }
     }
 
     var isVisible: Bool { panel.isVisible }
@@ -102,16 +79,20 @@ final class PanelController {
                 display: false
             )
         }
-        panel.makeKeyAndOrderFront(nil)
-        startMonitoring()
+        panel.present()
+        startKeyMonitor()
     }
 
     func hide(_ reason: String) {
-        guard panel.isVisible else { return }
+        panel.dismiss(reason)
+    }
+
+    /// After every close, whoever started it: this controller, or the panel itself (outside click, app switch).
+    private func didClose(_ reason: String) {
         log.notice("hide: \(reason, privacy: .public)")
         setPreview(false)
-        panel.orderOut(nil)
-        stopMonitoring()
+        if let keyMonitor { NSEvent.removeMonitor(keyMonitor) }
+        keyMonitor = nil
     }
 
     func setPreview(_ open: Bool) {
@@ -133,52 +114,18 @@ final class PanelController {
         let actions = model.actions(for: model.selectedClips.map(\.id)) { [weak self] in self?.setPreview(true) }
         guard !actions.isEmpty else { return }
         let menu = ClipActionsNSMenu.make(actions)
+        guard let host = panel.contentView else { return }
         let x = host.bounds.maxX - 320
         let y: CGFloat = host.isFlipped ? 64 : host.bounds.maxY - 64
         menu.popUp(positioning: menu.items.first, at: NSPoint(x: x, y: y), in: host)
     }
 
-    private func startMonitoring() {
-        stopMonitoring()
-        if let keys = NSEvent.addLocalMonitorForEvents(
-            matching: .keyDown,
-            handler: { [weak self] event in
-                guard let self else { return event }
-                return self.handle(event) ? nil : event
-            })
-        {
-            monitors.append(keys)
+    private func startKeyMonitor() {
+        if let keyMonitor { NSEvent.removeMonitor(keyMonitor) }
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self else { return event }
+            return self.handle(event) ? nil : event
         }
-        // UI test runs happen on a machine someone is using; their clicks must not close the shelf.
-        guard !AppModel.uiTest else { return }
-        if let clicks = NSEvent.addGlobalMonitorForEvents(
-            matching: [.leftMouseDown, .rightMouseDown],
-            handler: { [weak self] _ in
-                guard let self, !Self.systemCaptureUIVisible() else { return }
-                self.hide("outside click")
-            })
-        {
-            monitors.append(clicks)
-        }
-        activationObserver = NSWorkspace.shared.notificationCenter.addObserver(
-            forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main
-        ) { [weak self] note in
-            let app = (note.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication)?.bundleIdentifier ?? "?"
-            MainActor.assumeIsolated { self?.hide("activated \(app)") }
-        }
-    }
-
-    private func stopMonitoring() {
-        monitors.forEach(NSEvent.removeMonitor)
-        monitors = []
-        if let activationObserver { NSWorkspace.shared.notificationCenter.removeObserver(activationObserver) }
-        activationObserver = nil
-    }
-
-    /// Clicks made while taking a screenshot (⇧⌘4 region drag, ⇧⌘5 toolbar) must not close the shelf.
-    private static func systemCaptureUIVisible() -> Bool {
-        let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []
-        return windows.contains { ($0[kCGWindowOwnerName as String] as? String) == "screencaptureui" }
     }
 
     /// Returns true when the key was consumed. One case per key, so the complexity rule is off here.

@@ -2,8 +2,9 @@ import AppKit
 import ApplicationServices
 import Carbon.HIToolbox
 import MyClipsCore
+import MyKit
 import Observation
-import ServiceManagement
+import SwiftUI
 import os
 
 @Observable
@@ -24,7 +25,6 @@ final class AppModel {
     private(set) var pasteboardAccess = NSPasteboard.general.accessBehavior
     /// `.default` means macOS has not asked yet; myClips only appears in System Settings after the first prompt.
     var needsClipboardAccess: Bool { pasteboardAccess == .ask || pasteboardAccess == .alwaysDeny }
-    private(set) var hotKeyRegistered = false
     /// Unpinned clips kept in history.
     var historyLimit = UserDefaults.standard.object(forKey: "historyLimit") as? Int ?? 10_000 {
         didSet {
@@ -40,10 +40,15 @@ final class AppModel {
     @ObservationIgnored let panel: PanelController
     @ObservationIgnored private let store: Store
     @ObservationIgnored private let watcher = PasteboardWatcher()
-    @ObservationIgnored private var hotKey: HotKey?
+    /// ✦ V by default; the user can change it in Settings.
+    @ObservationIgnored private(set) lazy var openShortcut = GlobalShortcut(
+        name: "openShelf", default: Shortcut(keyCode: kVK_ANSI_V, modifiers: Shortcut.hyper)
+    ) { [weak self] in self?.panel.toggle() }
     @ObservationIgnored private var permissionTimer: Timer?
     @ObservationIgnored private var capturesSincePrune = 0
-    @ObservationIgnored private lazy var settingsWindow = SettingsWindow(app: self)
+    @ObservationIgnored private lazy var settingsWindow = SettingsWindow(title: "myClips Settings", tint: .brand) { [unowned self] in
+        SettingsSections(app: self)
+    }
     @ObservationIgnored private let log = Logger(subsystem: "dev.maciek.myclips", category: "app")
 
     init(store: Store) {
@@ -67,9 +72,7 @@ final class AppModel {
     func start() {
         watcher.paused = paused
         watcher.start()
-        hotKey = HotKey(keyCode: kVK_ANSI_V, modifiers: cmdKey | controlKey | optionKey | shiftKey) { [weak self] in self?.panel.toggle() }
-        hotKeyRegistered = hotKey != nil
-        if !hotKeyRegistered { log.error("could not register Hyper-V; another app may own it") }
+        _ = openShortcut  // registers the global shortcut
         Task { [store, historyLimit] in try? await store.prune(keep: historyLimit) }
         if Self.uiTest {
             DistributedNotificationCenter.default().addObserver(
@@ -194,18 +197,7 @@ final class AppModel {
     }
 
     func openPasteboardSettings() {
-        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Pasteboard")!)
-    }
-
-    var launchAtLogin: Bool {
-        get { SMAppService.mainApp.status == .enabled }
-        set {
-            do {
-                if newValue { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() }
-            } catch {
-                log.error("launch at login: \(error.localizedDescription, privacy: .public)")
-            }
-        }
+        SystemSettingsPane.pasteFromOtherApps.open()
     }
 
     private func refreshPermissions() {
