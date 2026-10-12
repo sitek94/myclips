@@ -31,6 +31,9 @@ for mode in light dark; do
     $D key space >/dev/null; sleep 0.8
     $D screenshot "$OUT/preview-$mode.png"
     $D key esc >/dev/null; sleep 0.3
+    $D key cmd+n >/dev/null; sleep 0.5
+    $D screenshot "$OUT/new-pinboard-$mode.png"
+    $D key esc >/dev/null; sleep 0.3
     $D key cmd+comma >/dev/null; sleep 1.2
     $D screenshot "$OUT/settings-$mode.png"
 done

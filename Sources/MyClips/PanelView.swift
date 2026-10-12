@@ -52,17 +52,15 @@ private struct TopBar: View {
     var focus: FocusState<PanelField?>.Binding
 
     var body: some View {
-        HStack(spacing: .space3) {
+        HStack(spacing: .space2) {
             HStack(spacing: .space2) {
                 Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
                 TextField("Search", text: $model.query)
                     .textFieldStyle(.plain)
                     .focused(focus, equals: .search)
             }
-            .padding(.horizontal, .space3)
-            .padding(.vertical, .space2)
-            .frame(width: 260)
-            .controlSurface()
+            .frame(width: 236)
+            .pill()
 
             TypeFilter(kind: $model.kind)
             BoardChips(model: model, focus: focus)
@@ -71,8 +69,6 @@ private struct TopBar: View {
             GearMenu(appName: "myClips", openSettings: app.showSettings) {
                 AppActions(app: app)
             }
-            .menuStyle(.button)
-            .buttonStyle(.glass)
         }
         .padding(.horizontal, .space4)
     }
@@ -96,8 +92,7 @@ private struct TypeFilter: View {
             Label(kind?.title ?? "All Types", systemImage: kind?.symbol ?? "square.grid.2x2")
         }
         .menuStyle(.button)
-        .buttonStyle(.glass)
-        .tint(kind == nil ? nil : .brand)
+        .buttonStyle(.pill(selected: kind != nil))
         .fixedSize()
     }
 }
@@ -132,7 +127,7 @@ private struct PermissionButtons: View {
             } label: {
                 warning("Allow Clipboard Access")
             }
-            .buttonStyle(.glass)
+            .buttonStyle(.pill)
         }
         if !app.accessibilityTrusted {
             Button {
@@ -140,7 +135,7 @@ private struct PermissionButtons: View {
             } label: {
                 warning("Enable Direct Paste")
             }
-            .buttonStyle(.glass)
+            .buttonStyle(.pill)
             .help("Lets myClips press ⌘V for you. Without it, clips are copied and you paste yourself.")
         }
     }
@@ -174,20 +169,15 @@ private struct BoardChips: View {
                 if model.newBoardName != nil {
                     TextField("Pinboard name", text: Binding(get: { model.newBoardName ?? "" }, set: { model.newBoardName = $0 }))
                         .textFieldStyle(.plain)
-                        .padding(.horizontal, .space3)
-                        .padding(.vertical, .space2)
-                        .frame(width: 170)
-                        .controlSurface()
+                        .frame(width: 146)
+                        .pill()
                         .focused(focus, equals: .boardName)
                         .onSubmit { model.commitNewBoard() }
                 } else {
-                    Button {
-                        model.startNewBoard()
-                    } label: {
-                        Image(systemName: "plus")
-                    }
-                    .buttonStyle(.glass)
-                    .help("New pinboard (⌘N)")
+                    Button("New Pinboard", systemImage: "plus") { model.startNewBoard() }
+                        .labelStyle(.iconOnly)
+                        .buttonStyle(.pill)
+                        .help("New pinboard (⌘N)")
                 }
             }
             .padding(.vertical, .space1)
@@ -199,9 +189,7 @@ private struct BoardChips: View {
         Button(action: action) {
             Label(title, systemImage: systemImage).labelStyle(.titleAndIcon)
         }
-        .buttonStyle(.glass)
-        .tint(selected ? .brand : nil)
-        .fontWeight(selected ? .semibold : .regular)
+        .buttonStyle(.pill(selected: selected))
     }
 }
 
