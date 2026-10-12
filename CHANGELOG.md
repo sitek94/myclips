@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Larger text and controls on the shelf.
+
 - The shelf's search field, filter, pinboard chips and buttons have one height and shape. Adding a pinboard no longer moves the shelf's top bar.
 
 - Settings, the Clear History alert and the app picker open in front of the active app. Settings opens centered, on the current Space, and Esc closes it.
