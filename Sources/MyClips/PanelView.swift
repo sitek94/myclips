@@ -176,7 +176,7 @@ private struct BoardChips: View {
                 } else {
                     Button("New Pinboard", systemImage: "plus") { model.startNewBoard() }
                         .labelStyle(.iconOnly)
-                        .buttonStyle(.pill)
+                        .buttonStyle(.pillIcon)
                         .help("New pinboard (⌘N)")
                 }
             }
