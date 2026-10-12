@@ -55,6 +55,14 @@ scripts/drive.sh stop
 
 In this **safe mode** `key`, `type` and `click` are delivered to the myClips process only, so nothing can reach the apps you're using. (Clicks delivered that way don't reach SwiftUI buttons; test those in an end-to-end run.)
 
+### Gallery
+
+```sh
+scripts/gallery.sh [out dir]    # default build/gallery
+```
+
+Screenshots of the shelf, a selection, the preview and Settings, in light and dark mode, on synthetic data in safe mode. Use it to review a change to the look, and compare before and after. The installed myClips quits while it runs (about a minute) and restarts at the end.
+
 ### End-to-end run
 
 `scripts/e2e.sh` uses real system-wide keys and clicks: Hyper+V, multi-select paste into a throwaway "sink" window, `⌘`-click, the type filter and its reset, and closing on an outside click. **Don't touch the keyboard or mouse while it runs** (about a minute). It aborts before pasting unless the sink window is frontmost, and restarts your real myClips at the end.
