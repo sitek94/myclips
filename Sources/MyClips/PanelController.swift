@@ -126,8 +126,8 @@ final class PanelController {
     }
 
     /// Runs a text key on the search field's editor directly: the shelf has no Edit menu, and the panel does not
-    /// pass these keys on to the field by itself.
-    private func performTextCommand(_ key: SearchFieldKeys.Key) -> Bool {
+    /// pass these keys on to the field by itself. One case per key, so the complexity rule is off here.
+    private func performTextCommand(_ key: SearchFieldKeys.Key) -> Bool {  // swiftlint:disable:this cyclomatic_complexity
         guard let editor = panel.firstResponder as? NSTextView else { return false }
         switch (key.commandLetter, key.code) {
         case ("a", _): editor.selectAll(nil)
