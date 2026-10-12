@@ -1,17 +1,11 @@
 # Changelog
 
-## Unreleased
-
-- Readable card headers: a darker teal for links, and dark text on a light color swatch ([#2](https://github.com/sitek94/myclips/issues/2)).
-
-- Settings → About links to the author's site.
-
-- Larger text and controls on the shelf.
-
-- The shelf's search field, filter, pinboard chips and buttons have one height and shape. Adding a pinboard no longer moves the shelf's top bar.
+## 0.3.0 — 2026-10-13
 
 - Settings, the Clear History alert and the app picker open in front of the active app. Settings opens centered, on the current Space, and Esc closes it.
-- The time on card headers shows in full white, for contrast.
+- Larger text, and one height and shape for the shelf's search field, filter, pinboard chips and buttons. Adding a pinboard no longer moves the top bar.
+- Readable card headers: full-white time, a darker teal for links, and dark text on a light color swatch ([#2](https://github.com/sitek94/myclips/issues/2)).
+- Settings → About links to the author's site.
 
 ## 0.2.0 — 2026-10-12
 
