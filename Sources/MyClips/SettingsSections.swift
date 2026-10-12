@@ -53,7 +53,7 @@ struct SettingsSections: View {
         }
 
         Section("About") {
-            VersionLine()
+            AboutRow()
         }
     }
 }

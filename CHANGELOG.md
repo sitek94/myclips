@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Settings → About links to the author's site.
+
 - Larger text and controls on the shelf.
 
 - The shelf's search field, filter, pinboard chips and buttons have one height and shape. Adding a pinboard no longer moves the shelf's top bar.
