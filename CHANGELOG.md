@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1 — 2026-10-12
+
+- myClips keeps running when its menu bar icon is hidden in System Settings → Menu Bar; it used to quit. Open the shelf with Hyper+V; Settings and Quit are under its gear button.
+
 ## 0.1.0 — 2026-10-11
 
 - Clipboard history with substring search (FTS5 trigram index, accent- and case-insensitive), capped at a configurable number of clips.

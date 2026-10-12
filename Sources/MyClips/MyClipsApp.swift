@@ -5,9 +5,11 @@ import SwiftUI
 @main
 struct MyClipsApp: App {
     @NSApplicationDelegateAdaptor private var delegate: AppDelegate
+    // Without this binding SwiftUI quits the app when its only scene, this item, is hidden in System Settings → Menu Bar.
+    @State private var menuBarItemInserted = true
 
     var body: some Scene {
-        MenuBarExtra("myClips", systemImage: "list.clipboard") {
+        MenuBarExtra("myClips", systemImage: "list.clipboard", isInserted: $menuBarItemInserted) {
             SettingsMenu(app: delegate.app)
         }
     }

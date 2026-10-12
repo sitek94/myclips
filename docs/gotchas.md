@@ -9,6 +9,8 @@ Traps hit while building myClips: symptom, cause, fix.
 - **`open` fails with error -600 right after `pkill`.** The old process hasn't exited yet. Wait for `pgrep` to come back empty before relaunching.
 - **SwiftUI `ImageRenderer` in a script fails to compile.** It's main-actor isolated; wrap the script's top level in `MainActor.assumeIsolated`.
 
+- **The app quits right after launch, with no crash report.** Its menu bar icon is hidden (System Settings → Menu Bar). A SwiftUI app whose only scene is a `MenuBarExtra` quits when that item is removed. Pass an `isInserted:` binding.
+
 ## Permissions
 
 - **Permissions reset after a rebuild.** Accessibility and Screen Recording grants belong to the bundle id and signing identity. Sign with a stable identity (any Apple Development certificate); ad-hoc signatures need a re-grant every build. Renaming the bundle id needs a re-grant too.
