@@ -170,7 +170,7 @@ final class AppModel {
     }
 
     func clearHistory() {
-        NSApp.activate()
+        AppWindows.activate()
         let alert = NSAlert()
         alert.messageText = "Clear clipboard history?"
         alert.informativeText = "Pinned clips and clips on pinboards are kept."
@@ -181,7 +181,7 @@ final class AppModel {
     }
 
     func chooseIgnoredApp() {
-        NSApp.activate()
+        AppWindows.activate()
         let open = NSOpenPanel()
         open.directoryURL = URL(filePath: "/Applications")
         open.allowedContentTypes = [.application]
