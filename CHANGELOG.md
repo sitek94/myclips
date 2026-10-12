@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 — 2026-10-12
+
+- The shortcut that opens the shelf can be changed in Settings → General. Hyper shows as ✦.
+- While the search field has text, ⌘A, ⌘C (with text selected), ⌘X, ⌘V, ⌘Z, ⌘⌫ and ⌥ or ⌘ with arrows edit the text instead of acting on the clips ([#1](https://github.com/sitek94/myclips/issues/1)).
+- A missing permission shows a yellow warning symbol; the buttons are no longer orange like the selection.
+- Settings sections: General, Ignored apps, History, Permissions, About.
+- Small changes to the look from shared design tokens: spacing, solid card backgrounds, the copy confirmation, the size of a color swatch's label.
+
 ## 0.1.1 — 2026-10-12
 
 - myClips keeps running when its menu bar icon is hidden in System Settings → Menu Bar; it used to quit. Open the shelf with Hyper+V; Settings and Quit are under its gear button.
