@@ -55,17 +55,3 @@ struct AppActions: View {
         Button("Clear History…") { app.clearHistory() }
     }
 }
-
-extension Shortcut {
-    /// The global shortcut as a menu key equivalent, so menus show the shortcut the user set.
-    /// Nil for keys that a menu cannot show as one character.
-    var menuShortcut: KeyboardShortcut? {
-        guard let name = keys.last, name.count == 1, let character = name.lowercased().first else { return nil }
-        var modifiers: EventModifiers = []
-        if modifierFlags.contains(.control) { modifiers.insert(.control) }
-        if modifierFlags.contains(.option) { modifiers.insert(.option) }
-        if modifierFlags.contains(.shift) { modifiers.insert(.shift) }
-        if modifierFlags.contains(.command) { modifiers.insert(.command) }
-        return KeyboardShortcut(KeyEquivalent(character), modifiers: modifiers)
-    }
-}

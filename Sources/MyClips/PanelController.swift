@@ -6,22 +6,13 @@ import SwiftUI
 import os
 
 /// Floats the preview above the shelf without taking keyboard focus from it.
-final class PreviewPanel: NSPanel {
+final class PreviewPanel: OverlayPanel {
     init() {
-        super.init(
-            contentRect: .zero, styleMask: [.nonactivatingPanel, .borderless],
-            backing: .buffered, defer: false)
+        super.init(level: .floating)
         isFloatingPanel = true
-        level = .floating
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
-        isOpaque = false
-        backgroundColor = .clear
         hasShadow = true
-        hidesOnDeactivate = false
-        isReleasedWhenClosed = false
     }
-
-    override var canBecomeKey: Bool { false }
 }
 
 /// Shows the shelf along the bottom of the screen under the mouse, in a myKit `FloatingPanel`:

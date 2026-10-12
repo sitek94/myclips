@@ -23,8 +23,9 @@ bundle() {
     cp ".build/release/$product" "$app/Contents/MacOS/$product"
     if [[ -n "${icon:-}" ]]; then
         # Icon Composer document -> Assets.car (+ fallback .icns); macOS 26 renders it natively.
+        # Absolute paths: actool runs in a long-lived service that resolves relative ones against an earlier caller's folder.
         mkdir -p "$app/Contents/Resources"
-        xcrun actool "$icon" --compile "$app/Contents/Resources" --platform macosx \
+        xcrun actool "$PWD/$icon" --compile "$PWD/$app/Contents/Resources" --platform macosx \
             --minimum-deployment-target 26.0 --app-icon AppIcon \
             --output-partial-info-plist "$(mktemp -d)/partial.plist" >/dev/null
     fi

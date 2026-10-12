@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Settings, the Clear History alert and the app picker open in front of the active app. Settings opens centered, on the current Space, and Esc closes it.
+- The time on card headers shows in full white, for contrast.
+
 ## 0.2.0 — 2026-10-12
 
 - The shortcut that opens the shelf can be changed in Settings → General. Hyper shows as ✦.
