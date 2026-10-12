@@ -85,7 +85,7 @@ final class PanelController {
     private(set) var previousApp: NSRunningApplication?
 
     func toggle() {
-        isVisible ? hide("hotkey") : show()
+        if isVisible { hide("hotkey") } else { show() }
     }
 
     func show() {
@@ -181,8 +181,8 @@ final class PanelController {
         return windows.contains { ($0[kCGWindowOwnerName as String] as? String) == "screencaptureui" }
     }
 
-    /// Returns true when the key was consumed.
-    private func handle(_ event: NSEvent) -> Bool {
+    /// Returns true when the key was consumed. One case per key, so the complexity rule is off here.
+    private func handle(_ event: NSEvent) -> Bool {  // swiftlint:disable:this cyclomatic_complexity
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         let code = Int(event.keyCode)
         // Letter shortcuts by character, so they follow the keyboard layout.
@@ -194,7 +194,8 @@ final class PanelController {
         }
 
         switch (code, letter) {
-        case (kVK_Escape, _): model.previewing ? setPreview(false) : hide("esc")
+        case (kVK_Escape, _):
+            if model.previewing { setPreview(false) } else { hide("esc") }
         case (kVK_Space, nil) where flags.isEmpty && model.query.isEmpty: setPreview(!model.previewing)
         case (_, "y"): setPreview(!model.previewing)
         case (kVK_RightArrow, _): model.moveCursor(by: 1, extending: flags.contains(.shift))

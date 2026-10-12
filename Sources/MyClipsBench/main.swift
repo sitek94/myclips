@@ -15,8 +15,8 @@ let words = """
     café naïve résumé Zürich Kraków
     """.split(separator: " ").map(String.init)
 
-func sentence(_ n: Int) -> String {
-    (0..<n).map { _ in words.randomElement()! }.joined(separator: " ")
+func sentence(_ count: Int) -> String {
+    (0..<count).map { _ in words.randomElement()! }.joined(separator: " ")
 }
 
 func payload(_ i: Int) -> ClipPayload {
@@ -44,14 +44,16 @@ for query in queries {
     var samples: [Duration] = []
     var hits = 0
     for _ in 0..<30 {
-        let t = ContinuousClock.now
+        let start = ContinuousClock.now
         hits = try await store.clips(matching: query).count
-        samples.append(ContinuousClock.now - t)
+        samples.append(ContinuousClock.now - start)
     }
     samples.sort()
-    let ms = { (d: Duration) in String(format: "%.2f ms", Double(d.components.attoseconds) / 1e15 + Double(d.components.seconds) * 1000) }
+    let milliseconds = { (duration: Duration) in
+        String(format: "%.2f ms", Double(duration.components.attoseconds) / 1e15 + Double(duration.components.seconds) * 1000)
+    }
     print(
         "\(query.isEmpty ? "<empty>" : query)".padding(toLength: 24, withPad: " ", startingAt: 0),
         "hits \(hits)".padding(toLength: 10, withPad: " ", startingAt: 0),
-        "p50 \(ms(samples[samples.count / 2]))", " p95 \(ms(samples[samples.count * 95 / 100]))")
+        "p50 \(milliseconds(samples[samples.count / 2]))", " p95 \(milliseconds(samples[samples.count * 95 / 100]))")
 }

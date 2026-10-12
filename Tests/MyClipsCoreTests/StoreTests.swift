@@ -8,11 +8,11 @@ private func makeStore() throws -> Store {
     return try Store(url: dir.appending(path: "clips.sqlite"))
 }
 
-private func text(_ s: String, app: String? = nil) -> ClipPayload {
+private func text(_ string: String, app: String? = nil) -> ClipPayload {
     ClipPayload(
-        kind: CaptureRules.kind(types: ["public.utf8-plain-text"], string: s),
-        text: s,
-        representations: [Representation(item: 0, type: "public.utf8-plain-text", data: Data(s.utf8))],
+        kind: CaptureRules.kind(types: ["public.utf8-plain-text"], string: string),
+        text: string,
+        representations: [Representation(item: 0, type: "public.utf8-plain-text", data: Data(string.utf8))],
         sourceBundleID: app
     )
 }
@@ -85,22 +85,22 @@ private func text(_ s: String, app: String? = nil) -> ClipPayload {
 
     @Test func pinboardListsOnlyItsClips() async throws {
         let store = try makeStore()
-        let a = try await store.record(text("alpha"))
+        let alpha = try await store.record(text("alpha"))
         try await store.record(text("beta"))
         let board = try await store.createPinboard(named: "Snippets")
-        try await store.pin(a, to: board)
-        try await store.pin(a, to: board)
+        try await store.pin(alpha, to: board)
+        try await store.pin(alpha, to: board)
         #expect(try await store.clips(in: board).map(\.preview) == ["alpha"])
         #expect(try await store.pinboards().map(\.itemCount) == [1])
-        try await store.unpin(a, from: board)
+        try await store.unpin(alpha, from: board)
         #expect(try await store.clips(in: board).isEmpty)
     }
 
     @Test func deletingPinboardKeepsItsClipsInHistory() async throws {
         let store = try makeStore()
-        let a = try await store.record(text("alpha"))
+        let alpha = try await store.record(text("alpha"))
         let board = try await store.createPinboard(named: "Temp")
-        try await store.pin(a, to: board)
+        try await store.pin(alpha, to: board)
         try await store.deletePinboard(board)
         #expect(try await store.pinboards().isEmpty)
         #expect(try await store.clips().count == 1)
@@ -187,10 +187,10 @@ private func text(_ s: String, app: String? = nil) -> ClipPayload {
 
     @Test func batchDeleteRemovesAll() async throws {
         let store = try makeStore()
-        let a = try await store.record(text("a1"))
-        let b = try await store.record(text("b1"))
+        let first = try await store.record(text("a1"))
+        let second = try await store.record(text("b1"))
         try await store.record(text("c1"))
-        try await store.delete([a, b])
+        try await store.delete([first, second])
         #expect(try await store.clips().map(\.preview) == ["c1"])
     }
 

@@ -277,15 +277,18 @@ public actor Store {
         try db.run("DELETE FROM pinboard_items WHERE pinboard_id = ? AND item_id = ?", [.int(pinboard), .int(item)])
     }
 
-    // MARK: Helpers
-
     private static let expirable = "pinned_at IS NULL AND id NOT IN (SELECT item_id FROM pinboard_items)"
 
-    private static func optional(_ value: String?) -> SQLValue {
+}
+
+// MARK: Helpers
+
+extension Store {
+    fileprivate static func optional(_ value: String?) -> SQLValue {
         value.map(SQLValue.text) ?? .null
     }
 
-    private static func clip(_ row: Statement) -> Clip {
+    fileprivate static func clip(_ row: Statement) -> Clip {
         Clip(
             id: row.int(0),
             kind: ClipKind(rawValue: row.text(1) ?? "") ?? .text,

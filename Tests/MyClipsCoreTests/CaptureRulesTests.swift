@@ -26,7 +26,7 @@ import Testing
             (["public.utf8-plain-text"], "mailto:me@example.com", .text),
             (["public.png"], nil, .image),
             (["public.tiff", "public.utf8-plain-text"], "caption", .text),
-        ] as [([String], String?, ClipKind)])
+        ] as [([String], String?, ClipKind)])  // swiftlint:disable:this large_tuple
     func classifies(types: [String], string: String?, expected: ClipKind) {
         #expect(CaptureRules.kind(types: Set(types), string: string) == expected)
     }
@@ -50,9 +50,9 @@ import Testing
     }
 
     @Test func hashIgnoresRepresentationOrder() {
-        let a = Representation(item: 0, type: "public.html", data: Data("<b>x</b>".utf8))
-        let b = Representation(item: 0, type: "public.utf8-plain-text", data: Data("x".utf8))
-        #expect(CaptureRules.contentHash([a, b]) == CaptureRules.contentHash([b, a]))
-        #expect(CaptureRules.contentHash([a]) != CaptureRules.contentHash([b]))
+        let html = Representation(item: 0, type: "public.html", data: Data("<b>x</b>".utf8))
+        let plain = Representation(item: 0, type: "public.utf8-plain-text", data: Data("x".utf8))
+        #expect(CaptureRules.contentHash([html, plain]) == CaptureRules.contentHash([plain, html]))
+        #expect(CaptureRules.contentHash([html]) != CaptureRules.contentHash([plain]))
     }
 }

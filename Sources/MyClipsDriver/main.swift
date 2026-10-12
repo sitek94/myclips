@@ -80,11 +80,11 @@ func typeText(_ text: String, to pid: pid_t) {
 
 func windowList(owner: String) -> String {
     let all = CGWindowListCopyWindowInfo([.optionAll], kCGNullWindowID) as? [[String: Any]] ?? []
-    return all.filter { $0[kCGWindowOwnerName as String] as? String == owner }.map { w in
-        let b = w[kCGWindowBounds as String] as? [String: Any] ?? [:]
-        return "id=\(w[kCGWindowNumber as String] ?? "?") layer=\(w[kCGWindowLayer as String] ?? "?") "
-            + "onscreen=\(w[kCGWindowIsOnscreen as String] ?? false) "
-            + "frame=\(b["X"] ?? 0),\(b["Y"] ?? 0),\(b["Width"] ?? 0),\(b["Height"] ?? 0)"
+    return all.filter { $0[kCGWindowOwnerName as String] as? String == owner }.map { window in
+        let bounds = window[kCGWindowBounds as String] as? [String: Any] ?? [:]
+        return "id=\(window[kCGWindowNumber as String] ?? "?") layer=\(window[kCGWindowLayer as String] ?? "?") "
+            + "onscreen=\(window[kCGWindowIsOnscreen as String] ?? false) "
+            + "frame=\(bounds["X"] ?? 0),\(bounds["Y"] ?? 0),\(bounds["Width"] ?? 0),\(bounds["Height"] ?? 0)"
     }.joined(separator: "\n")
 }
 
@@ -113,6 +113,8 @@ func screenshot(path: String, owner: String) async -> (String, Int32) {
 
 var busy = false
 
+// One case per verb.
+// swiftlint:disable:next cyclomatic_complexity function_body_length
 @MainActor func run(_ verb: String, _ args: [String]) async -> (String, Int32) {
     switch verb {
     case "setup":

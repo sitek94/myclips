@@ -1,5 +1,6 @@
 import AppKit
 import MyClipsCore
+import MyKit
 import QuickLookUI
 import SwiftUI
 
@@ -16,8 +17,8 @@ struct PreviewView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 Divider()
                 metadata(clip)
-                    .padding(.horizontal, 18)
-                    .padding(.vertical, 12)
+                    .padding(.horizontal, .space4)
+                    .padding(.vertical, .space3)
                     .task(id: clip.id) {
                         image = clip.kind == .image ? await model.image(for: clip) : nil
                         text = await model.fullText(for: clip)
@@ -25,7 +26,7 @@ struct PreviewView: View {
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .glassEffect(.regular, in: .rect(cornerRadius: 26))
+        .panelSurface()
         .ignoresSafeArea()
     }
 
@@ -34,21 +35,21 @@ struct PreviewView: View {
         switch clip.kind {
         case .image:
             if let image {
-                Image(nsImage: image).resizable().scaledToFit().padding(18)
+                Image(nsImage: image).resizable().scaledToFit().padding(.space4)
             } else {
                 ProgressView()
             }
         case .file where existingFile(clip) != nil:
             QuickLookView(url: existingFile(clip)!)
-                .padding(12)
+                .padding(.space3)
         case .file:
             ScrollView {
-                VStack(alignment: .leading, spacing: 10) {
+                VStack(alignment: .leading, spacing: .space3) {
                     ForEach(clip.preview.split(separator: "\n").map(String.init), id: \.self) { path in
                         Label {
                             VStack(alignment: .leading) {
-                                Text((path as NSString).lastPathComponent).font(.headline)
-                                Text(path).font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
+                                Text((path as NSString).lastPathComponent).font(.textHeadline)
+                                Text(path).font(.textCaption).foregroundStyle(.secondary).textSelection(.enabled)
                             }
                         } icon: {
                             Image(nsImage: NSWorkspace.shared.icon(forFile: path)).resizable().frame(width: 40, height: 40)
@@ -56,25 +57,25 @@ struct PreviewView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(18)
+                .padding(.space4)
             }
         case .text where clip.hexColor != nil:
-            RoundedRectangle(cornerRadius: 18).fill(clip.hexColor!)
-                .overlay(Text(clip.preview.uppercased()).font(.largeTitle.monospaced().weight(.semibold)).foregroundStyle(.white).shadow(radius: 3))
-                .padding(18)
+            RoundedRectangle(cornerRadius: .radiusCard).fill(clip.hexColor!)
+                .overlay(Text(clip.preview.uppercased()).font(.textTitle.monospaced().weight(.semibold)).foregroundStyle(.white).shadow(radius: 3))
+                .padding(.space4)
         case .text, .link:
             ScrollView {
                 Text(text)
-                    .font(.system(.body, design: looksLikeCode(text) ? .monospaced : .default))
+                    .font(looksLikeCode(text) ? .textCode : .textBody)
                     .textSelection(.enabled)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(18)
+                    .padding(.space4)
             }
         }
     }
 
     private func metadata(_ clip: Clip) -> some View {
-        HStack(spacing: 14) {
+        HStack(spacing: .space3) {
             if let icon = model.icon(for: clip.sourceBundleID) {
                 Image(nsImage: icon).resizable().frame(width: 22, height: 22)
             }
@@ -87,7 +88,7 @@ struct PreviewView: View {
             Spacer()
             Text(size(clip))
         }
-        .font(.callout)
+        .font(.textCallout)
         .foregroundStyle(.secondary)
     }
 

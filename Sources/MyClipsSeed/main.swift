@@ -1,5 +1,7 @@
 // Fills a scratch store with realistic-looking synthetic clips for UI work and screenshots.
 // usage: MyClipsSeed <data dir>
+// The synthetic pictures' colors are content, not UI.
+// swiftlint:disable raw_color
 import AppKit
 import MyClipsCore
 
@@ -17,10 +19,10 @@ for suffix in ["", "-wal", "-shm"] {
 }
 let store = try Store(url: url)
 
-func text(_ s: String, _ app: String, _ name: String) -> ClipPayload {
+func text(_ string: String, _ app: String, _ name: String) -> ClipPayload {
     ClipPayload(
-        kind: CaptureRules.kind(types: ["public.utf8-plain-text"], string: s), text: s,
-        representations: [Representation(item: 0, type: "public.utf8-plain-text", data: Data(s.utf8))],
+        kind: CaptureRules.kind(types: ["public.utf8-plain-text"], string: string), text: string,
+        representations: [Representation(item: 0, type: "public.utf8-plain-text", data: Data(string.utf8))],
         sourceBundleID: app, sourceName: name
     )
 }
@@ -121,3 +123,4 @@ let links = try await store.createPinboard(named: "Links")
 for id in try await store.clips(matching: "developer.apple").map(\.id) { try await store.pin(id, to: links) }
 try await store.setPinned(store.clips(matching: "hello@").map(\.id), true)
 print("seeded \(clips.count) clips into \(url.path)")
+// swiftlint:enable raw_color

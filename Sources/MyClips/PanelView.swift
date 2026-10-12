@@ -1,4 +1,5 @@
 import MyClipsCore
+import MyKit
 import SwiftUI
 
 enum PanelField: Hashable {
@@ -13,7 +14,7 @@ struct PanelView: View {
     @FocusState private var focus: PanelField?
 
     var body: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: .space3) {
             TopBar(model: model, app: app, focus: $focus)
             if model.clips.isEmpty {
                 ContentUnavailableView(
@@ -25,22 +26,11 @@ struct PanelView: View {
                 CardStrip(model: model, openPreview: openPreview)
             }
         }
-        .padding(.top, 14)
-        .padding(.bottom, 16)
+        .padding(.top, .space3)
+        .padding(.bottom, .space4)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .overlay(alignment: .top) {
-            if let flash = model.flash {
-                Label(flash, systemImage: "checkmark.circle.fill")
-                    .font(.callout.weight(.semibold))
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 6)
-                    .glassEffect(.regular.tint(.green.opacity(0.3)), in: .capsule)
-                    .padding(.top, 12)
-                    .transition(.opacity)
-            }
-        }
-        .animation(.easeOut(duration: 0.15), value: model.flash)
-        .glassEffect(.regular, in: .rect(cornerRadius: 26))
+        .toast(model.flash)
+        .panelSurface()
         .ignoresSafeArea()
         .tint(.brand)
         .onChange(of: model.openCount, initial: true) {
@@ -62,17 +52,17 @@ private struct TopBar: View {
     var focus: FocusState<PanelField?>.Binding
 
     var body: some View {
-        HStack(spacing: 12) {
-            HStack(spacing: 8) {
+        HStack(spacing: .space3) {
+            HStack(spacing: .space2) {
                 Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
                 TextField("Search", text: $model.query)
                     .textFieldStyle(.plain)
                     .focused(focus, equals: .search)
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
+            .padding(.horizontal, .space3)
+            .padding(.vertical, .space2)
             .frame(width: 260)
-            .glassEffect(.regular, in: .capsule)
+            .controlSurface()
 
             TypeFilter(kind: $model.kind)
             BoardChips(model: model, focus: focus)
@@ -88,7 +78,7 @@ private struct TopBar: View {
             .menuIndicator(.hidden)
             .fixedSize()
         }
-        .padding(.horizontal, 18)
+        .padding(.horizontal, .space4)
     }
 }
 
@@ -141,15 +131,30 @@ private struct PermissionButtons: View {
 
     var body: some View {
         if app.needsClipboardAccess {
-            Button("Allow Clipboard Access", systemImage: "doc.on.clipboard") { app.openPasteboardSettings() }
-                .buttonStyle(.glassProminent)
-                .tint(.orange)
+            Button {
+                app.openPasteboardSettings()
+            } label: {
+                warning("Allow Clipboard Access")
+            }
+            .buttonStyle(.glass)
         }
         if !app.accessibilityTrusted {
-            Button("Enable Direct Paste", systemImage: "keyboard") { app.requestAccessibility() }
-                .buttonStyle(.glassProminent)
-                .tint(.orange)
-                .help("Lets myClips press ⌘V for you. Without it, clips are copied and you paste yourself.")
+            Button {
+                app.requestAccessibility()
+            } label: {
+                warning("Enable Direct Paste")
+            }
+            .buttonStyle(.glass)
+            .help("Lets myClips press ⌘V for you. Without it, clips are copied and you paste yourself.")
+        }
+    }
+
+    /// Only the symbol is yellow: yellow text is hard to read.
+    private func warning(_ title: String) -> some View {
+        Label {
+            Text(title)
+        } icon: {
+            Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.warning)
         }
     }
 }
@@ -160,7 +165,7 @@ private struct BoardChips: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 6) {
+            HStack(spacing: .space2) {
                 chip("History", systemImage: "clock", selected: model.board == nil) { model.board = nil }
                 ForEach(model.pinboards) { board in
                     chip("\(board.name)  \(board.itemCount)", systemImage: "pin", selected: model.board == board.id) {
@@ -173,10 +178,10 @@ private struct BoardChips: View {
                 if model.newBoardName != nil {
                     TextField("Pinboard name", text: Binding(get: { model.newBoardName ?? "" }, set: { model.newBoardName = $0 }))
                         .textFieldStyle(.plain)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                        .padding(.horizontal, .space3)
+                        .padding(.vertical, .space2)
                         .frame(width: 170)
-                        .glassEffect(.regular, in: .capsule)
+                        .controlSurface()
                         .focused(focus, equals: .boardName)
                         .onSubmit { model.commitNewBoard() }
                 } else {
@@ -189,7 +194,7 @@ private struct BoardChips: View {
                     .help("New pinboard (⌘N)")
                 }
             }
-            .padding(.vertical, 2)
+            .padding(.vertical, .space1)
         }
         .scrollClipDisabled()
     }
@@ -213,7 +218,7 @@ private struct CardStrip: View {
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: 14) {
+                LazyHStack(spacing: .space3) {
                     ForEach(Array(model.clips.enumerated()), id: \.element.id) { index, clip in
                         ClipCard(
                             clip: clip, shortcut: index < 9 ? index + 1 : nil,
@@ -238,12 +243,12 @@ private struct CardStrip: View {
                         }
                     }
                 }
-                .padding(.horizontal, 18)
-                .padding(.vertical, 4)
+                .padding(.horizontal, .space4)
+                .padding(.vertical, .space1)
             }
             .scrollClipDisabled()
             .onChange(of: model.cursor) { _, id in
-                if let id { withAnimation(.snappy(duration: 0.2)) { proxy.scrollTo(id, anchor: .center) } }
+                if let id { withAnimation(.quick) { proxy.scrollTo(id, anchor: .center) } }
             }
         }
     }
@@ -253,153 +258,5 @@ private struct CardStrip: View {
         if flags.contains(.shift) { return .range }
         if flags.contains(.command) { return .toggle }
         return .none
-    }
-}
-
-private struct ClipCard: View {
-    let clip: Clip
-    let shortcut: Int?
-    let selected: Bool
-    let model: PanelModel
-    @State private var thumbnail: NSImage?
-    private var isCursor: Bool { model.cursor == clip.id }
-
-    static let size = CGSize(width: 232, height: 232)
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            header
-            content
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .padding(12)
-            footer
-        }
-        .frame(width: Self.size.width, height: Self.size.height)
-        .background(.background.opacity(0.92), in: .rect(cornerRadius: 16))
-        .clipShape(.rect(cornerRadius: 16))
-        .overlay {
-            RoundedRectangle(cornerRadius: 16)
-                .strokeBorder(selected ? Color.brand : .primary.opacity(0.08), lineWidth: selected ? (isCursor ? 3.5 : 2.5) : 1)
-        }
-        .shadow(color: .black.opacity(selected ? 0.25 : 0.12), radius: selected ? 10 : 5, y: 3)
-        .scaleEffect(selected ? 1.0 : 0.97)
-        .animation(.snappy(duration: 0.15), value: selected)
-        .task(id: clip.id) {
-            thumbnail = await model.thumbnail(for: clip)
-        }
-    }
-
-    private var header: some View {
-        HStack(spacing: 8) {
-            VStack(alignment: .leading, spacing: 1) {
-                HStack(spacing: 4) {
-                    if clip.isPinned { Image(systemName: "pin.fill").font(.caption) }
-                    Text(kindTitle).font(.headline)
-                }
-                Text(clip.usedAt.formatted(.relative(presentation: .named)))
-                    .font(.caption)
-                    .opacity(0.8)
-            }
-            Spacer(minLength: 0)
-            if let icon = model.icon(for: clip.sourceBundleID) {
-                Image(nsImage: icon).resizable().frame(width: 30, height: 30)
-            }
-        }
-        .foregroundStyle(.white)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 9)
-        .background(accent.gradient)
-    }
-
-    @ViewBuilder
-    private var content: some View {
-        switch clip.kind {
-        case .image:
-            if let thumbnail {
-                Image(nsImage: thumbnail).resizable().scaledToFit()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                Image(systemName: "photo").font(.largeTitle).foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-        case .file:
-            VStack(alignment: .leading, spacing: 8) {
-                if let thumbnail {
-                    Image(nsImage: thumbnail).resizable().scaledToFit()
-                        .frame(maxWidth: .infinity, maxHeight: 110)
-                } else {
-                    Image(systemName: "doc.fill").font(.system(size: 34)).foregroundStyle(.secondary)
-                }
-                Text(fileNames).font(.callout.weight(.medium)).lineLimit(thumbnail == nil ? 3 : 1)
-            }
-        case .link:
-            VStack(alignment: .leading, spacing: 6) {
-                Text(URL(string: clip.preview)?.host() ?? clip.preview).font(.callout.weight(.semibold)).lineLimit(1)
-                Text(clip.preview).font(.caption).foregroundStyle(.tint).lineLimit(5)
-            }
-        case .text:
-            if let color = hexColor {
-                RoundedRectangle(cornerRadius: 10).fill(color)
-                    .overlay(Text(clip.preview.uppercased()).font(.callout.monospaced().weight(.semibold)).foregroundStyle(.white).shadow(radius: 2))
-            } else {
-                Text(clip.preview.trimmingCharacters(in: .whitespacesAndNewlines))
-                    .font(.callout)
-                    .lineLimit(8)
-            }
-        }
-    }
-
-    private var footer: some View {
-        HStack {
-            Text(footerText)
-            Spacer()
-            if let shortcut { Text("⌘\(shortcut)") }
-        }
-        .font(.caption.monospacedDigit())
-        .foregroundStyle(.secondary)
-        .padding(.horizontal, 12)
-        .padding(.bottom, 9)
-    }
-
-    private var kindTitle: String {
-        switch clip.kind {
-        case .text: hexColor == nil ? "Text" : "Color"
-        case .link: "Link"
-        case .image: "Image"
-        case .file: "File"
-        }
-    }
-
-    private var accent: Color {
-        switch clip.kind {
-        case .text: hexColor ?? .indigo
-        case .link: .teal
-        case .image: .pink
-        case .file: .brown
-        }
-    }
-
-    private var footerText: String {
-        switch clip.kind {
-        case .text, .link: "\(clip.preview.count >= 1000 ? "1000+" : String(clip.preview.count)) characters"
-        case .image: ByteCountFormatter.string(fromByteCount: Int64(clip.byteSize), countStyle: .file)
-        case .file: clip.fileSizeText
-        }
-    }
-
-    private var fileNames: String {
-        clip.preview.split(separator: "\n").map { ($0 as NSString).lastPathComponent }.joined(separator: ", ")
-    }
-
-    private var hexColor: Color? { clip.hexColor }
-}
-
-extension Clip {
-    /// "#4F46E5" or "4F46E5" renders as a swatch.
-    var hexColor: Color? {
-        guard kind == .text else { return nil }
-        let hex = preview.trimmingCharacters(in: .whitespacesAndNewlines).trimmingPrefix("#")
-        guard hex.count == 6, let value = UInt32(hex, radix: 16) else { return nil }
-        return Color(red: Double(value >> 16 & 0xFF) / 255, green: Double(value >> 8 & 0xFF) / 255, blue: Double(value & 0xFF) / 255)
     }
 }
