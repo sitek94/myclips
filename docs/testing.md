@@ -61,7 +61,7 @@ In this **safe mode** `key`, `type` and `click` are delivered to the myClips pro
 scripts/gallery.sh [out dir]    # default build/gallery
 ```
 
-Screenshots of the shelf, a selection, the preview and Settings, in light and dark mode, on synthetic data in safe mode. Use it to review a change to the look, and compare before and after. The installed myClips quits while it runs (about a minute) and restarts at the end.
+Screenshots of the shelf, a selection, the preview, a new pinboard and Settings, in light and dark mode, on synthetic data in safe mode. The test app takes `-appearance light|dark`, so both modes show whatever the Mac is set to. Use it to review a change to the look, and compare before and after. The installed myClips quits while it runs (about a minute) and restarts at the end.
 
 ### End-to-end run
 

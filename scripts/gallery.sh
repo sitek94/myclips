@@ -20,9 +20,7 @@ rm -rf "$WORK" && xcrun swift build -c release --product MyClipsSeed >/dev/null 
 
 for mode in light dark; do
     quit
-    style=()
-    [[ $mode == dark ]] && style=(-AppleInterfaceStyle Dark)
-    open -g -n build/myClips.app --args -dataDir "$WORK" -paused YES -uiTest YES ${style[@]+"${style[@]}"}
+    open -g -n build/myClips.app --args -dataDir "$WORK" -paused YES -uiTest YES -appearance $mode
     until pgrep -x myClips >/dev/null; do sleep 0.2; done; sleep 1.5
     $D toggle >/dev/null; sleep 1
     $D screenshot "$OUT/shelf-$mode.png"

@@ -56,3 +56,27 @@ public struct Pinboard: Sendable, Identifiable, Hashable {
     public let name: String
     public let itemCount: Int
 }
+
+extension Clip {
+    /// "#4F46E5" or "4F46E5"; such a text clip shows as a swatch.
+    public var hexRGB: RGB? {
+        guard kind == .text else { return nil }
+        let hex = preview.trimmingCharacters(in: .whitespacesAndNewlines).trimmingPrefix("#")
+        guard hex.count == 6, let value = UInt32(hex, radix: 16) else { return nil }
+        return RGB(red: Double(value >> 16 & 0xFF) / 255, green: Double(value >> 8 & 0xFF) / 255, blue: Double(value & 0xFF) / 255)
+    }
+
+    /// A light swatch needs dark text on it: white text is hard to read on yellow or light gray.
+    public var hexIsLight: Bool {
+        guard let rgb = hexRGB else { return false }
+        // Perceived brightness (Rec. 601 weights).
+        return 0.299 * rgb.red + 0.587 * rgb.green + 0.114 * rgb.blue > 0.65
+    }
+}
+
+/// A color's red, green and blue, from 0 to 1.
+public struct RGB: Sendable, Hashable {
+    public let red: Double
+    public let green: Double
+    public let blue: Double
+}

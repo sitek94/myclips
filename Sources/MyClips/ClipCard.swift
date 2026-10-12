@@ -51,7 +51,7 @@ struct ClipCard: View {
                 Image(nsImage: icon).resizable().frame(width: 30, height: 30)
             }
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(clip.hexIsLight ? .black : .white)
         .padding(.horizontal, .space3)
         .padding(.vertical, .space2)
         .background(accent.gradient)
@@ -122,7 +122,8 @@ struct ClipCard: View {
     private var accent: Color {
         switch clip.kind {
         case .text: hexColor ?? .indigo
-        case .link: .teal
+        // Darker than system teal: white text on it was hard to read.
+        case .link: .teal.mix(with: .black, by: 0.25)
         case .image: .pink
         case .file: .brown
         }
@@ -146,11 +147,8 @@ struct ClipCard: View {
 extension Clip {
     /// "#4F46E5" or "4F46E5" renders as a swatch.
     var hexColor: Color? {
-        guard kind == .text else { return nil }
-        let hex = preview.trimmingCharacters(in: .whitespacesAndNewlines).trimmingPrefix("#")
-        guard hex.count == 6, let value = UInt32(hex, radix: 16) else { return nil }
         // The user's own color, not a UI color.
         // swiftlint:disable:next raw_color
-        return Color(red: Double(value >> 16 & 0xFF) / 255, green: Double(value >> 8 & 0xFF) / 255, blue: Double(value & 0xFF) / 255)
+        hexRGB.map { Color(red: $0.red, green: $0.green, blue: $0.blue) }
     }
 }

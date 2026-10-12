@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Readable card headers: a darker teal for links, and dark text on a light color swatch ([#2](https://github.com/sitek94/myclips/issues/2)).
+
 - Settings → About links to the author's site.
 
 - Larger text and controls on the shelf.

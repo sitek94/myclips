@@ -75,6 +75,12 @@ final class AppModel {
         _ = openShortcut  // registers the global shortcut
         Task { [store, historyLimit] in try? await store.prune(keep: historyLimit) }
         if Self.uiTest {
+            // `-appearance light|dark`: the gallery shows both modes whatever the Mac is set to.
+            switch UserDefaults.standard.string(forKey: "appearance") {
+            case "light": NSApp.appearance = NSAppearance(named: .aqua)
+            case "dark": NSApp.appearance = NSAppearance(named: .darkAqua)
+            default: break
+            }
             DistributedNotificationCenter.default().addObserver(
                 forName: .init("dev.maciek.myclips.toggle"), object: nil, queue: .main
             ) { [weak self] _ in
