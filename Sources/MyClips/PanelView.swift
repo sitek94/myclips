@@ -89,7 +89,11 @@ private struct TypeFilter: View {
             }
             .pickerStyle(.inline)
         } label: {
-            Label(kind?.title ?? "All Types", systemImage: kind?.symbol ?? "square.grid.2x2")
+            // The arrow says "this opens a list", unlike the chips next to it, which switch on a click.
+            HStack(spacing: .space1) {
+                Label(kind?.title ?? "All Types", systemImage: kind?.symbol ?? "square.grid.2x2")
+                Image(systemName: "chevron.down").font(.textCaption.weight(.semibold)).foregroundStyle(.secondary)
+            }
         }
         .menuStyle(.button)
         .buttonStyle(.pill(selected: kind != nil))
