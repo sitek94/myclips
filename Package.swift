@@ -9,11 +9,16 @@ let package = Package(
         .executable(name: "myClips", targets: ["MyClips"]),
         .executable(name: "myClipsDriver", targets: ["MyClipsDriver"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/sitek94/mykit", from: "0.1.0"),
+        // Pins the SwiftLint binary that scripts/check.sh runs (same version as myKit); no target uses it.
+        .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins", exact: "0.65.1"),
+    ],
     targets: [
         .target(name: "MyClipsCore", linkerSettings: [.linkedLibrary("sqlite3")]),
         .executableTarget(
             name: "MyClips",
-            dependencies: ["MyClipsCore"],
+            dependencies: ["MyClipsCore", .product(name: "MyKit", package: "mykit")],
             swiftSettings: [.defaultIsolation(MainActor.self)]
         ),
         .executableTarget(name: "MyClipsBench", dependencies: ["MyClipsCore"]),

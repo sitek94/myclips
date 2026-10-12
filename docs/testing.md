@@ -1,5 +1,13 @@
 # Testing
 
+## The gate
+
+```sh
+scripts/check.sh
+```
+
+Runs `swift format lint`, SwiftLint, a build with warnings as errors, and the tests. CI runs the same script. The lint config is a copy of myKit's at the version `Package.resolved` pins: after a myKit update, run `.build/checkouts/mykit/scripts/sync-lint-config.sh`.
+
 ## Unit tests
 
 ```sh

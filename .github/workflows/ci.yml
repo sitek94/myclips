@@ -8,13 +8,11 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  check:
     runs-on: macos-26
     steps:
       - uses: actions/checkout@v5
       - name: Toolchain
         run: xcrun swift --version
-      - name: Build
-        run: xcrun swift build
-      - name: Test
-        run: xcrun swift test
+      - name: Check
+        run: scripts/check.sh

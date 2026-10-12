@@ -1,0 +1,24 @@
+{
+  "originHash" : "75fcc516169da2c0e75b82222d94dcac60e0a7384aaeff11657b4109da25f3d0",
+  "pins" : [
+    {
+      "identity" : "mykit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sitek94/mykit",
+      "state" : {
+        "revision" : "95d1973d7003f0881938474808ea87c60ae1eadb",
+        "version" : "0.1.0"
+      }
+    },
+    {
+      "identity" : "swiftlintplugins",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/SimplyDanny/SwiftLintPlugins",
+      "state" : {
+        "revision" : "ef7d692fc6706e8f5628e26bcafaefa445c58a97",
+        "version" : "0.65.1"
+      }
+    }
+  ],
+  "version" : 3
+}

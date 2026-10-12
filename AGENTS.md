@@ -2,7 +2,7 @@
 
 myClips is a personal clipboard manager for macOS 26 (Swift 6, SwiftUI + AppKit, SQLite). Keep the feature set small.
 
-`xcrun swift test` is the local gate. Always go through `xcrun`: a `swift` elsewhere on `PATH` may be an older toolchain.
+`scripts/check.sh` is the gate: format, lint (including the design-token rules from myKit), build with warnings as errors, tests. CI runs the same script. Always go through `xcrun`: a `swift` elsewhere on `PATH` may be an older toolchain.
 
 This file is a map, not the docs. Open the page that owns the task:
 
