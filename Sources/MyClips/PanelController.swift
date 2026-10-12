@@ -1,5 +1,6 @@
 import AppKit
 import Carbon.HIToolbox
+import MyClipsCore
 import MyKit
 import SwiftUI
 import os
@@ -120,6 +121,30 @@ final class PanelController {
         menu.popUp(positioning: menu.items.first, at: NSPoint(x: x, y: y), in: host)
     }
 
+    private var searchTextSelected: Bool {
+        ((panel.firstResponder as? NSTextView)?.selectedRange().length ?? 0) > 0
+    }
+
+    /// Runs a text key on the search field's editor directly: the shelf has no Edit menu, and the panel does not
+    /// pass these keys on to the field by itself.
+    private func performTextCommand(_ key: SearchFieldKeys.Key) -> Bool {
+        guard let editor = panel.firstResponder as? NSTextView else { return false }
+        switch (key.commandLetter, key.code) {
+        case ("a", _): editor.selectAll(nil)
+        case ("c", _): editor.copy(nil)
+        case ("x", _): editor.cut(nil)
+        case ("v", _): editor.paste(nil)
+        case ("z", _): editor.undoManager?.undo()
+        case (_, kVK_Delete): editor.deleteToBeginningOfLine(nil)
+        case (_, kVK_LeftArrow) where key.command: editor.moveToBeginningOfLine(nil)
+        case (_, kVK_LeftArrow): editor.moveWordLeft(nil)
+        case (_, kVK_RightArrow) where key.command: editor.moveToEndOfLine(nil)
+        case (_, kVK_RightArrow): editor.moveWordRight(nil)
+        default: return false
+        }
+        return true
+    }
+
     private func startKeyMonitor() {
         if let keyMonitor { NSEvent.removeMonitor(keyMonitor) }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
@@ -138,6 +163,11 @@ final class PanelController {
         if model.newBoardName != nil {
             if code == kVK_Escape { model.newBoardName = nil; return true }
             return false  // the name field handles everything else, including Return
+        }
+        let key = SearchFieldKeys.Key(
+            code: code, command: flags.contains(.command), option: flags.contains(.option), commandLetter: letter)
+        if SearchFieldKeys.ownsKey(key, fieldHasText: !model.query.isEmpty, textSelected: searchTextSelected) {
+            return performTextCommand(key)
         }
 
         switch (code, letter) {
