@@ -1,6 +1,6 @@
 import AppKit
-import MyClipsCore
 import ImageIO
+import MyClipsCore
 import Observation
 import QuickLookThumbnailing
 
@@ -102,7 +102,7 @@ final class PanelModel {
             anchor = id
         case .range:
             guard let from = clips.firstIndex(where: { $0.id == (anchor ?? cursor) }),
-                  let to = clips.firstIndex(where: { $0.id == id })
+                let to = clips.firstIndex(where: { $0.id == id })
             else { return select(id) }
             selected = Set(clips[min(from, to)...max(from, to)].map(\.id))
         }
@@ -244,7 +244,8 @@ final class PanelModel {
             }
         case .file:
             guard let path = clip.preview.split(separator: "\n").first.map(String.init),
-                  FileManager.default.fileExists(atPath: path) else { return nil }
+                FileManager.default.fileExists(atPath: path)
+            else { return nil }
             let request = QLThumbnailGenerator.Request(
                 fileAt: URL(filePath: path), size: CGSize(width: 208, height: 140), scale: 2, representationTypes: .thumbnail
             )
@@ -258,11 +259,13 @@ final class PanelModel {
 
     private nonisolated static func downsample(_ data: Data, maxPixels: Int) -> NSImage? {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil),
-              let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, [
-                  kCGImageSourceCreateThumbnailFromImageAlways: true,
-                  kCGImageSourceCreateThumbnailWithTransform: true,
-                  kCGImageSourceThumbnailMaxPixelSize: maxPixels,
-              ] as CFDictionary)
+            let cgImage = CGImageSourceCreateThumbnailAtIndex(
+                source, 0,
+                [
+                    kCGImageSourceCreateThumbnailFromImageAlways: true,
+                    kCGImageSourceCreateThumbnailWithTransform: true,
+                    kCGImageSourceThumbnailMaxPixelSize: maxPixels,
+                ] as CFDictionary)
         else { return nil }
         return NSImage(cgImage: cgImage, size: .zero)
     }
@@ -283,8 +286,8 @@ final class PanelModel {
     /// Full text for the preview; the list only carries the first 1,000 characters.
     func fullText(for clip: Clip) async -> String {
         guard let reps = try? await store.representations(of: clip.id),
-              let rep = reps.first(where: { $0.type == NSPasteboard.PasteboardType.string.rawValue }),
-              let text = String(data: rep.data, encoding: .utf8)
+            let rep = reps.first(where: { $0.type == NSPasteboard.PasteboardType.string.rawValue }),
+            let text = String(data: rep.data, encoding: .utf8)
         else { return clip.preview }
         return text
     }

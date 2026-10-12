@@ -26,7 +26,9 @@ func text(_ s: String, _ app: String, _ name: String) -> ClipPayload {
 }
 
 func png(_ size: NSSize, _ draw: @escaping (NSRect) -> Void) -> Data {
-    let img = NSImage(size: size, flipped: false) { rect in draw(rect); return true }
+    let img = NSImage(size: size, flipped: false) { rect in
+        draw(rect); return true
+    }
     return NSBitmapImageRep(data: img.tiffRepresentation!)!.representation(using: .png, properties: [:])!
 }
 
@@ -35,8 +37,10 @@ let photo = png(NSSize(width: 960, height: 600)) { rect in
     NSGradient(colors: [.systemPurple, .systemPink, .systemOrange])?.draw(in: rect, angle: -90)
     NSColor(white: 1, alpha: 0.9).setFill()
     NSBezierPath(ovalIn: NSRect(x: 600, y: 230, width: 150, height: 150)).fill()
-    for (color, peaks) in [(NSColor(white: 0.15, alpha: 0.55), [0, 260, 180, 330, 420, 250, 700, 360, 960, 220]),
-                           (NSColor(white: 0.08, alpha: 0.85), [0, 150, 240, 210, 520, 120, 760, 190, 960, 110])] {
+    for (color, peaks) in [
+        (NSColor(white: 0.15, alpha: 0.55), [0, 260, 180, 330, 420, 250, 700, 360, 960, 220]),
+        (NSColor(white: 0.08, alpha: 0.85), [0, 150, 240, 210, 520, 120, 760, 190, 960, 110]),
+    ] {
         let path = NSBezierPath()
         path.move(to: .zero)
         for i in stride(from: 0, to: peaks.count, by: 2) { path.line(to: NSPoint(x: peaks[i], y: peaks[i + 1])) }
@@ -66,8 +70,9 @@ let screenshotPNG = png(NSSize(width: 960, height: 600)) { rect in
 }
 
 func image(_ data: Data, _ app: String, _ name: String) -> ClipPayload {
-    ClipPayload(kind: .image, text: "", representations: [Representation(item: 0, type: "public.png", data: data)],
-                sourceBundleID: app, sourceName: name)
+    ClipPayload(
+        kind: .image, text: "", representations: [Representation(item: 0, type: "public.png", data: data)],
+        sourceBundleID: app, sourceName: name)
 }
 
 /// What a screenshot's floating thumbnail puts on the clipboard: a file reference plus the PNG.
@@ -78,14 +83,16 @@ func screenshot() -> ClipPayload {
         Representation(item: 0, type: "public.file-url", data: Data(screenshotURL.absoluteString.utf8)),
         Representation(item: 0, type: "public.png", data: screenshotPNG),
     ]
-    return ClipPayload(kind: CaptureRules.kind(types: Set(reps.map(\.type)), string: nil), text: screenshotURL.path,
-                       representations: reps, sourceBundleID: "com.apple.finder", sourceName: "Finder")
+    return ClipPayload(
+        kind: CaptureRules.kind(types: Set(reps.map(\.type)), string: nil), text: screenshotURL.path,
+        representations: reps, sourceBundleID: "com.apple.finder", sourceName: "Finder")
 }
 
 func file(_ path: String) -> ClipPayload {
-    ClipPayload(kind: .file, text: path,
-                representations: [Representation(item: 0, type: "public.file-url", data: Data(URL(filePath: path).absoluteString.utf8))],
-                sourceBundleID: "com.apple.finder", sourceName: "Finder")
+    ClipPayload(
+        kind: .file, text: path,
+        representations: [Representation(item: 0, type: "public.file-url", data: Data(URL(filePath: path).absoluteString.utf8))],
+        sourceBundleID: "com.apple.finder", sourceName: "Finder")
 }
 
 // Oldest first; the last one shows first in the shelf.

@@ -18,7 +18,8 @@ public actor Store {
         if version < 1 { try createV1(db) }
         if version < 2 {
             try db.transaction {
-                try db.execute("""
+                try db.execute(
+                    """
                     ALTER TABLE items ADD COLUMN pinned_at REAL;
                     CREATE INDEX items_pinned ON items(pinned_at) WHERE pinned_at IS NOT NULL;
                     PRAGMA user_version = 2;
@@ -28,7 +29,8 @@ public actor Store {
         if version < 3 {
             // Captures before CaptureRules treated file + embedded image data as an image.
             try db.transaction {
-                try db.execute("""
+                try db.execute(
+                    """
                     UPDATE items SET kind = 'image' WHERE kind = 'file' AND id IN (
                         SELECT item_id FROM reps WHERE type IN ('public.png', 'public.jpeg', 'public.heic')
                     );
@@ -40,7 +42,8 @@ public actor Store {
 
     static func createV1(_ db: Database) throws {
         try db.transaction {
-            try db.execute("""
+            try db.execute(
+                """
                 CREATE TABLE items (
                     id INTEGER PRIMARY KEY,
                     hash TEXT NOT NULL UNIQUE,
@@ -110,9 +113,11 @@ public actor Store {
                 INSERT INTO items (hash, kind, text, source_bundle, source_name, created_at, used_at, byte_size)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
-                [.text(hash), .text(payload.kind.rawValue), .text(payload.text),
-                 Self.optional(payload.sourceBundleID), Self.optional(payload.sourceName),
-                 .double(now), .double(now), .int(Int64(payload.byteSize))]
+                [
+                    .text(hash), .text(payload.kind.rawValue), .text(payload.text),
+                    Self.optional(payload.sourceBundleID), Self.optional(payload.sourceName),
+                    .double(now), .double(now), .int(Int64(payload.byteSize)),
+                ]
             )
             let id = db.lastInsertRowID
             let insert = try db.prepare("INSERT OR IGNORE INTO reps (item_id, item, type, data) VALUES (?, ?, ?, ?)")
@@ -307,7 +312,8 @@ struct SearchPlan {
             if token.unicodeScalars.count >= 3 {
                 phrases.append("\"" + token.replacingOccurrences(of: "\"", with: "\"\"") + "\"")
             } else {
-                let escaped = token
+                let escaped =
+                    token
                     .replacingOccurrences(of: "\\", with: "\\\\")
                     .replacingOccurrences(of: "%", with: "\\%")
                     .replacingOccurrences(of: "_", with: "\\_")

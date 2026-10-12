@@ -71,12 +71,13 @@ final class PasteboardWatcher {
 
         let string = pasteboard.string(forType: .string)
         let kind = CaptureRules.kind(types: allTypes, string: string)
-        let text: String = if kind == .file {
-            items.compactMap { $0.string(forType: .fileURL).flatMap(URL.init(string:))?.path(percentEncoded: false) }
-                .joined(separator: "\n")
-        } else {
-            string ?? ""
-        }
+        let text: String =
+            if kind == .file {
+                items.compactMap { $0.string(forType: .fileURL).flatMap(URL.init(string:))?.path(percentEncoded: false) }
+                    .joined(separator: "\n")
+            } else {
+                string ?? ""
+            }
         return ClipPayload(
             kind: kind, text: text, representations: reps,
             sourceBundleID: source?.bundleIdentifier, sourceName: source?.localizedName

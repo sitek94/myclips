@@ -78,7 +78,7 @@ public enum CaptureRules {
     static func isLink(_ string: String) -> Bool {
         let trimmed = string.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.contains(where: \.isWhitespace),
-              let url = URL(string: trimmed), let scheme = url.scheme?.lowercased()
+            let url = URL(string: trimmed), let scheme = url.scheme?.lowercased()
         else { return false }
         return ["http", "https"].contains(scheme) && url.host() != nil
     }

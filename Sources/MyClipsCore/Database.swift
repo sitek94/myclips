@@ -121,14 +121,15 @@ final class Statement {
         sqlite3_clear_bindings(stmt)
         for (offset, value) in values.enumerated() {
             let index = Int32(offset + 1)
-            let rc: Int32 = switch value {
-            case .int(let v): sqlite3_bind_int64(stmt, index, v)
-            case .double(let v): sqlite3_bind_double(stmt, index, v)
-            case .text(let v): sqlite3_bind_text(stmt, index, v, -1, transient)
-            case .blob(let v) where v.isEmpty: sqlite3_bind_zeroblob(stmt, index, 0)
-            case .blob(let v): v.withUnsafeBytes { sqlite3_bind_blob(stmt, index, $0.baseAddress, Int32($0.count), transient) }
-            case .null: sqlite3_bind_null(stmt, index)
-            }
+            let rc: Int32 =
+                switch value {
+                case .int(let v): sqlite3_bind_int64(stmt, index, v)
+                case .double(let v): sqlite3_bind_double(stmt, index, v)
+                case .text(let v): sqlite3_bind_text(stmt, index, v, -1, transient)
+                case .blob(let v) where v.isEmpty: sqlite3_bind_zeroblob(stmt, index, 0)
+                case .blob(let v): v.withUnsafeBytes { sqlite3_bind_blob(stmt, index, $0.baseAddress, Int32($0.count), transient) }
+                case .null: sqlite3_bind_null(stmt, index)
+                }
             guard rc == SQLITE_OK else { throw db.lastError(rc) }
         }
     }

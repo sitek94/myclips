@@ -20,7 +20,7 @@ final class HotKey {
             },
             1, &spec, Unmanaged.passUnretained(self).toOpaque(), &handlerRef
         )
-        let id = EventHotKeyID(signature: OSType(0x434C_5053), id: 1) // "CLPS"
+        let id = EventHotKeyID(signature: OSType(0x434C_5053), id: 1)  // "CLPS"
         let registered = RegisterEventHotKey(
             UInt32(keyCode), UInt32(modifiers), id, GetApplicationEventTarget(), 0, &hotKeyRef
         )

@@ -68,7 +68,10 @@ private struct SettingsView: View {
 
             Section {
                 // Built-ins cover several password managers; list only the installed ones.
-                ForEach(CaptureRules.defaultIgnoredApps.sorted().filter { NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0) != nil }, id: \.self) { id in
+                ForEach(
+                    CaptureRules.defaultIgnoredApps.sorted().filter { NSWorkspace.shared.urlForApplication(withBundleIdentifier: $0) != nil },
+                    id: \.self
+                ) { id in
                     AppRow(bundleID: id) { Text("Built in").foregroundStyle(.secondary) }
                 }
                 ForEach(app.ignoredApps, id: \.self) { id in

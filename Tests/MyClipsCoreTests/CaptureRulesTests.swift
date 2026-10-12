@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import MyClipsCore
 
 @Suite struct CaptureRulesTests {
@@ -14,17 +15,18 @@ import Testing
         #expect(CaptureRules.isStorable(type: "public.html"))
     }
 
-    @Test(arguments: [
-        (["public.file-url", "public.utf8-plain-text"], "report.pdf", ClipKind.file),
-        // Regression: screenshots arrive as a file reference plus PNG data and showed as files.
-        (["public.file-url", "public.png"], nil, .image),
-        (["public.file-url", "public.tiff", "public.utf8-plain-text"], "photo.png", .file),
-        (["public.utf8-plain-text"], "https://example.com/a?b=1", .link),
-        (["public.utf8-plain-text"], "see https://example.com", .text),
-        (["public.utf8-plain-text"], "mailto:me@example.com", .text),
-        (["public.png"], nil, .image),
-        (["public.tiff", "public.utf8-plain-text"], "caption", .text),
-    ] as [([String], String?, ClipKind)])
+    @Test(
+        arguments: [
+            (["public.file-url", "public.utf8-plain-text"], "report.pdf", ClipKind.file),
+            // Regression: screenshots arrive as a file reference plus PNG data and showed as files.
+            (["public.file-url", "public.png"], nil, .image),
+            (["public.file-url", "public.tiff", "public.utf8-plain-text"], "photo.png", .file),
+            (["public.utf8-plain-text"], "https://example.com/a?b=1", .link),
+            (["public.utf8-plain-text"], "see https://example.com", .text),
+            (["public.utf8-plain-text"], "mailto:me@example.com", .text),
+            (["public.png"], nil, .image),
+            (["public.tiff", "public.utf8-plain-text"], "caption", .text),
+        ] as [([String], String?, ClipKind)])
     func classifies(types: [String], string: String?, expected: ClipKind) {
         #expect(CaptureRules.kind(types: Set(types), string: string) == expected)
     }

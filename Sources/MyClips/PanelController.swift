@@ -36,8 +36,9 @@ final class ShelfPanel: NSPanel {
 /// Floats the preview above the shelf without taking keyboard focus from it.
 final class PreviewPanel: NSPanel {
     init() {
-        super.init(contentRect: .zero, styleMask: [.nonactivatingPanel, .borderless],
-                   backing: .buffered, defer: false)
+        super.init(
+            contentRect: .zero, styleMask: [.nonactivatingPanel, .borderless],
+            backing: .buffered, defer: false)
         isFloatingPanel = true
         level = .floating
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
@@ -95,8 +96,9 @@ final class PanelController {
         let screen = NSScreen.screens.first { $0.frame.contains(mouse) } ?? NSScreen.main
         if let visible = screen?.visibleFrame {
             panel.setFrame(
-                NSRect(x: visible.minX + Self.margin, y: visible.minY + Self.margin,
-                       width: visible.width - 2 * Self.margin, height: Self.height),
+                NSRect(
+                    x: visible.minX + Self.margin, y: visible.minY + Self.margin,
+                    width: visible.width - 2 * Self.margin, height: Self.height),
                 display: false
             )
         }
@@ -138,16 +140,26 @@ final class PanelController {
 
     private func startMonitoring() {
         stopMonitoring()
-        if let keys = NSEvent.addLocalMonitorForEvents(matching: .keyDown, handler: { [weak self] event in
-            guard let self else { return event }
-            return self.handle(event) ? nil : event
-        }) { monitors.append(keys) }
+        if let keys = NSEvent.addLocalMonitorForEvents(
+            matching: .keyDown,
+            handler: { [weak self] event in
+                guard let self else { return event }
+                return self.handle(event) ? nil : event
+            })
+        {
+            monitors.append(keys)
+        }
         // UI test runs happen on a machine someone is using; their clicks must not close the shelf.
         guard !AppModel.uiTest else { return }
-        if let clicks = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown], handler: { [weak self] _ in
-            guard let self, !Self.systemCaptureUIVisible() else { return }
-            self.hide("outside click")
-        }) { monitors.append(clicks) }
+        if let clicks = NSEvent.addGlobalMonitorForEvents(
+            matching: [.leftMouseDown, .rightMouseDown],
+            handler: { [weak self] _ in
+                guard let self, !Self.systemCaptureUIVisible() else { return }
+                self.hide("outside click")
+            })
+        {
+            monitors.append(clicks)
+        }
         activationObserver = NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main
         ) { [weak self] note in
@@ -178,7 +190,7 @@ final class PanelController {
 
         if model.newBoardName != nil {
             if code == kVK_Escape { model.newBoardName = nil; return true }
-            return false // the name field handles everything else, including Return
+            return false  // the name field handles everything else, including Return
         }
 
         switch (code, letter) {

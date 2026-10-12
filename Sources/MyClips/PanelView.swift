@@ -180,9 +180,13 @@ private struct BoardChips: View {
                         .focused(focus, equals: .boardName)
                         .onSubmit { model.commitNewBoard() }
                 } else {
-                    Button { model.startNewBoard() } label: { Image(systemName: "plus") }
-                        .buttonStyle(.glass)
-                        .help("New pinboard (⌘N)")
+                    Button {
+                        model.startNewBoard()
+                    } label: {
+                        Image(systemName: "plus")
+                    }
+                    .buttonStyle(.glass)
+                    .help("New pinboard (⌘N)")
                 }
             }
             .padding(.vertical, 2)
@@ -211,21 +215,23 @@ private struct CardStrip: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 LazyHStack(spacing: 14) {
                     ForEach(Array(model.clips.enumerated()), id: \.element.id) { index, clip in
-                        ClipCard(clip: clip, shortcut: index < 9 ? index + 1 : nil,
-                                 selected: model.selected.contains(clip.id), model: model)
-                            .id(clip.id)
-                            // One handler reading the click count: a separate count-2 gesture makes
-                            // SwiftUI hold every single click until the double-click interval passes.
-                            .onTapGesture {
-                                if NSApp.currentEvent?.clickCount == 2 {
-                                    model.onPaste([clip], false)
-                                } else {
-                                    model.select(clip.id, extend: Self.extendFromModifiers())
-                                }
+                        ClipCard(
+                            clip: clip, shortcut: index < 9 ? index + 1 : nil,
+                            selected: model.selected.contains(clip.id), model: model
+                        )
+                        .id(clip.id)
+                        // One handler reading the click count: a separate count-2 gesture makes
+                        // SwiftUI hold every single click until the double-click interval passes.
+                        .onTapGesture {
+                            if NSApp.currentEvent?.clickCount == 2 {
+                                model.onPaste([clip], false)
+                            } else {
+                                model.select(clip.id, extend: Self.extendFromModifiers())
                             }
-                            .contextMenu {
-                                ClipActionsMenu(actions: model.actions(for: model.targets(for: clip), openPreview: openPreview))
-                            }
+                        }
+                        .contextMenu {
+                            ClipActionsMenu(actions: model.actions(for: model.targets(for: clip), openPreview: openPreview))
+                        }
                         // Pinned clips lead History; a rule marks where they end.
                         if clip.isPinned, model.board == nil, index + 1 < model.clips.count, !model.clips[index + 1].isPinned {
                             Capsule().fill(.secondary.opacity(0.5)).frame(width: 3, height: 160)

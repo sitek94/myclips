@@ -71,7 +71,7 @@ func typeText(_ text: String, to pid: pid_t) {
             let event = CGEvent(keyboardEventSource: source, virtualKey: 0, keyDown: down)
             var char = unit
             event?.keyboardSetUnicodeString(stringLength: 1, unicodeString: &char)
-            event?.flags = [] // don't inherit modifiers from an earlier combo
+            event?.flags = []  // don't inherit modifiers from an earlier combo
             deliver(event, to: pid)
             usleep(8_000)
         }
@@ -93,7 +93,7 @@ func screenshot(path: String, owner: String) async -> (String, Int32) {
         let content = try await SCShareableContent.excludingDesktopWindows(true, onScreenWindowsOnly: true)
         let mine = content.windows.filter { $0.owningApplication?.applicationName == owner && $0.isOnScreen && $0.frame.height > 30 }
         guard let first = mine.first,
-              let display = content.displays.first(where: { $0.frame.intersects(first.frame) }) ?? content.displays.first
+            let display = content.displays.first(where: { $0.frame.intersects(first.frame) }) ?? content.displays.first
         else { return ("no on-screen windows for \(owner)", 1) }
         let filter = SCContentFilter(display: display, including: mine)
         let union = mine.map(\.frame).reduce(first.frame) { $0.union($1) }
@@ -146,8 +146,9 @@ var busy = false
         if options.contains("shift") { flags.insert(.maskShift) }
         let types: [CGEventType] = right ? [.rightMouseDown, .rightMouseUp] : [.leftMouseDown, .leftMouseUp]
         for type in types {
-            let event = CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: CGPoint(x: x, y: y),
-                                mouseButton: right ? .right : .left)
+            let event = CGEvent(
+                mouseEventSource: nil, mouseType: type, mouseCursorPosition: CGPoint(x: x, y: y),
+                mouseButton: right ? .right : .left)
             event?.flags = flags
             event?.post(tap: .cghidEventTap)
             usleep(40_000)
@@ -179,8 +180,10 @@ var busy = false
     try? FileManager.default.createDirectory(at: res, withIntermediateDirectories: true)
     Timer.scheduledTimer(withTimeInterval: 0.05, repeats: true) { _ in
         MainActor.assumeIsolated {
-            guard !busy, let name = (try? FileManager.default.contentsOfDirectory(atPath: req.path))?
-                .filter({ $0.hasSuffix(".json") }).sorted().first else { return }
+            guard !busy,
+                let name = (try? FileManager.default.contentsOfDirectory(atPath: req.path))?
+                    .filter({ $0.hasSuffix(".json") }).sorted().first
+            else { return }
             let file = req.appending(path: name)
             let command = (try? JSONDecoder().decode([String].self, from: Data(contentsOf: file))) ?? []
             try? FileManager.default.removeItem(at: file)
@@ -198,8 +201,9 @@ var busy = false
 /// `sinkapp <result> <seconds>`: a separate, normally launched (so frontmost) process with a text
 /// window to paste into; writes the window's text to <result> when time is up.
 @MainActor func sinkApp(result: URL, seconds: Double) {
-    let window = NSWindow(contentRect: NSRect(x: 200, y: 400, width: 420, height: 160),
-                          styleMask: [.titled], backing: .buffered, defer: false)
+    let window = NSWindow(
+        contentRect: NSRect(x: 200, y: 400, width: 420, height: 160),
+        styleMask: [.titled], backing: .buffered, defer: false)
     window.title = "myClipsDriver sink"
     // Above other apps' windows, so a click on it reaches it and activates it.
     window.level = .floating

@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+
 @testable import MyClipsCore
 
 private func makeStore() throws -> Store {
@@ -163,7 +164,8 @@ private func text(_ s: String, app: String? = nil) -> ClipPayload {
         do {
             let db = try Database(path: url.path)
             try Store.createV1(db)
-            try db.execute("""
+            try db.execute(
+                """
                 INSERT INTO items (id, hash, kind, text, created_at, used_at, byte_size) VALUES
                     (1, 'a', 'file', '/tmp/Screenshot.png', 1, 1, 9), (2, 'b', 'file', '/tmp/doc.pdf', 2, 2, 9);
                 INSERT INTO reps VALUES (1, 0, 'public.file-url', x'00'), (1, 0, 'public.png', x'89'),

@@ -32,18 +32,22 @@ extension PanelModel {
             .button("Paste as Plain Text", "⇧↩") { self.onPaste(clips, true) },
         ]
         if !many {
-            actions.append(.button("Preview", "⌘Y") {
-                self.select(clips[0].id)
-                openPreview()
-            })
+            actions.append(
+                .button("Preview", "⌘Y") {
+                    self.select(clips[0].id)
+                    openPreview()
+                })
         }
         actions.append(.divider)
         let allPinned = clips.allSatisfy(\.isPinned)
         actions.append(.button(allPinned ? "Unpin from Top" : "Pin to Top", "⌘P") { self.setPinned(ids, !allPinned) })
-        actions.append(ClipAction(title: "Add to Pinboard", kind: .submenu(
-            pinboards.map { board in .button(board.name) { self.add(ids, to: board.id) } }
-                + [.divider, .button("New Pinboard…") { self.startNewBoard(adding: ids) }]
-        )))
+        actions.append(
+            ClipAction(
+                title: "Add to Pinboard",
+                kind: .submenu(
+                    pinboards.map { board in .button(board.name) { self.add(ids, to: board.id) } }
+                        + [.divider, .button("New Pinboard…") { self.startNewBoard(adding: ids) }]
+                )))
         if let board, let name = pinboards.first(where: { $0.id == board })?.name {
             actions.append(.button("Remove from \(name)") { self.remove(ids) })
         }
@@ -89,7 +93,7 @@ enum ClipActionsNSMenu {
                 let target = Target(perform)
                 let item = NSMenuItem(title: action.title, action: #selector(Target.run), keyEquivalent: "")
                 item.target = target
-                item.representedObject = target // NSMenuItem holds its target weakly
+                item.representedObject = target  // NSMenuItem holds its target weakly
                 if let shortcut { item.toolTip = shortcut }
                 menu.addItem(item)
             case .submenu(let children):

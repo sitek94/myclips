@@ -45,7 +45,7 @@ enum Paster {
     /// The key that types `character` in the current layout, so Cmd+V works on Dvorak, AZERTY, etc.
     private static func keyCode(for character: Character) -> CGKeyCode? {
         guard let source = TISCopyCurrentKeyboardLayoutInputSource()?.takeRetainedValue(),
-              let layoutPointer = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData)
+            let layoutPointer = TISGetInputSourceProperty(source, kTISPropertyUnicodeKeyLayoutData)
         else { return nil }
         let layoutData = Unmanaged<CFData>.fromOpaque(layoutPointer).takeUnretainedValue() as Data
         let target = Array(String(character).utf16)

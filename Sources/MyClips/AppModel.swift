@@ -111,7 +111,7 @@ final class AppModel {
         Task {
             guard await write(clips, plainText: plainText) else { return }
             if clips.count == 1, let clip = clips.first { _ = try? await store.markUsed(clip.id) }
-            guard AXIsProcessTrusted() else { return } // clip stays on the pasteboard for a manual Cmd+V
+            guard AXIsProcessTrusted() else { return }  // clip stays on the pasteboard for a manual Cmd+V
             guard !Self.uiTest else {
                 log.notice("ui test: pasted clip to pasteboard, keystroke skipped")
                 return
@@ -184,7 +184,8 @@ final class AppModel {
         open.allowedContentTypes = [.application]
         open.message = "myClips will not record anything copied in this app."
         guard open.runModal() == .OK, let url = open.url,
-              let id = Bundle(url: url)?.bundleIdentifier, !ignoredApps.contains(id) else { return }
+            let id = Bundle(url: url)?.bundleIdentifier, !ignoredApps.contains(id)
+        else { return }
         ignoredApps.append(id)
     }
 

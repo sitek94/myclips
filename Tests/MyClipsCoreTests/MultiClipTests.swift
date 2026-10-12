@@ -1,5 +1,6 @@
 import AppKit
 import Testing
+
 @testable import MyClipsCore
 
 @Suite struct MultiClipTests {
