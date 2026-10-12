@@ -39,7 +39,7 @@ custom_rules:
     regex: '\.font\(\s*\.(largeTitle|title|title2|title3|headline|subheadline|body|callout|footnote|caption|caption2|system)\b'
     excluded: '.*/Tokens\.swift'
     excluded_match_kinds: [comment, doccomment, string]
-    message: "Use a text token: .textTitle, .textHeadline, .textBody, .textCallout, .textCaption, .textCode. Font(.system(size:)) only for an SF Symbol used as a picture, with a disable comment."
+    message: "Use a text token: .textDisplay, .textTitle, .textHeadline, .textBody, .textCallout, .textCaption, .textCode. Font(.system(size:)) only for an SF Symbol used as a picture, with a disable comment."
     severity: error
   raw_color:
     name: Raw color

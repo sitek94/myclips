@@ -61,7 +61,7 @@ struct PreviewView: View {
             }
         case .text where clip.hexColor != nil:
             RoundedRectangle(cornerRadius: .radiusCard).fill(clip.hexColor!)
-                .overlay(Text(clip.preview.uppercased()).font(.textTitle.monospaced().weight(.semibold)).foregroundStyle(.white).shadow(radius: 3))
+                .overlay(Text(clip.preview.uppercased()).font(.textDisplay.monospaced().weight(.semibold)).foregroundStyle(.white).shadow(radius: 3))
                 .padding(.space4)
         case .text, .link:
             ScrollView {
