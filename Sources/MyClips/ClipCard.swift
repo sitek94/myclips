@@ -42,9 +42,9 @@ struct ClipCard: View {
                     if clip.isPinned { Image(systemName: "pin.fill").font(.textCaption) }
                     Text(kindTitle).font(.textHeadline)
                 }
+                // Full white: a dimmed white is hard to read on the bright header colors.
                 Text(clip.usedAt.formatted(.relative(presentation: .named)))
                     .font(.textCaption)
-                    .foregroundStyle(.white.secondary)
             }
             Spacer(minLength: 0)
             if let icon = model.icon(for: clip.sourceBundleID) {
