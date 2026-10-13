@@ -1,13 +1,13 @@
 {
-  "originHash" : "76e54e98be14238611d78e06988ec99f7cfedd597accbd95e7877e0fcceec70f",
+  "originHash" : "6a4700b262fb2fe2a50f6b78f74108747f85e91776427661ba71ce4da23cab3d",
   "pins" : [
     {
       "identity" : "mykit",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/sitek94/mykit",
       "state" : {
-        "revision" : "086f17c27af340977c4be1a5ab7d238e3f38f2d6",
-        "version" : "0.2.1"
+        "revision" : "b2916e200949c5cfec2c831bfbf67325995c6f9f",
+        "version" : "0.3.0"
       }
     },
     {
