@@ -12,7 +12,12 @@ final class AppModel {
     static let historySizes = [1_000, 5_000, 10_000, 50_000]
     /// `-uiTest YES` on launch: shelf ignores outside clicks and opens on a distributed notification,
     /// so scripts/drive.sh can test it without global key events.
-    static let uiTest = UserDefaults.standard.bool(forKey: "uiTest")
+    /// Only in a test build (`UITEST=1 scripts/bundle.sh`): in a normal build any local process could open the shelf.
+    #if UITEST
+        static let uiTest = UserDefaults.standard.bool(forKey: "uiTest")
+    #else
+        static let uiTest = false
+    #endif
 
     /// Persisted; `-paused YES` on launch starts paused (used for UI test runs).
     var paused = UserDefaults.standard.bool(forKey: "paused") {

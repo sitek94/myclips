@@ -41,10 +41,11 @@ scripts/drive.sh setup     # then enable myClipsDriver in Screen Recording and A
 | --- | --- |
 | `-dataDir <dir>` | use a scratch store instead of your history |
 | `-paused YES` | don't capture what you copy meanwhile |
-| `-uiTest YES` | shelf ignores clicks elsewhere, opens on `drive.sh toggle`, pastes to the clipboard without sending `⌘V` |
+| `-uiTest YES` | shelf ignores clicks elsewhere, opens on `drive.sh toggle`, pastes to the clipboard without sending `⌘V`. Only in a test build: `UITEST=1 scripts/bundle.sh` |
 
 ```sh
 xcrun swift run -c release MyClipsSeed /tmp/myclips-ui
+UITEST=1 scripts/bundle.sh
 open -g -n build/myClips.app --args -dataDir /tmp/myclips-ui -paused YES -uiTest YES
 scripts/drive.sh toggle
 scripts/drive.sh type zur

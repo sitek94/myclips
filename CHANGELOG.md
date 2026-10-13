@@ -6,6 +6,7 @@
 - Larger text, and one height and shape for the shelf's search field, filter, pinboard chips and buttons. Adding a pinboard no longer moves the top bar.
 - Readable card headers: full-white time, a darker teal for links, and dark text on a light color swatch ([#2](https://github.com/sitek94/myclips/issues/2)).
 - Settings → About links to the author's site.
+- The test hooks (`-uiTest`) exist only in a test build (`UITEST=1 scripts/bundle.sh`), so no other process can open the shelf.
 - A new app icon glyph of our own drawing, in the same look (the SF Symbols license does not allow symbols in app icons).
 
 ## 0.2.0 — 2026-10-12

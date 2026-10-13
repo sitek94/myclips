@@ -17,7 +17,10 @@ COMMIT=$(git rev-parse --short HEAD 2>/dev/null || echo unknown)
 # bundle <product> <bundle id>
 bundle() {
     local product=$1 id=$2 app=build/$1.app
-    xcrun swift build -c release --product "$product"
+    # UITEST=1: a test build with the test hooks (gallery, e2e). Never install one.
+    local flags=()
+    [[ "${UITEST:-}" == 1 ]] && flags=(-Xswiftc -DUITEST)
+    xcrun swift build -c release --product "$product" ${flags[@]+"${flags[@]}"}
     rm -rf "$app"
     mkdir -p "$app/Contents/MacOS"
     cp ".build/release/$product" "$app/Contents/MacOS/$product"
@@ -62,6 +65,7 @@ fi
 icon=Resources/AppIcon.icon bundle myClips dev.maciek.myclips
 
 if [[ "${1:-}" == "install" ]]; then
+    [[ "${UITEST:-}" == 1 ]] && { echo "a test build is never installed"; exit 1; }
     pkill -x myClips || true
     while pgrep -x myClips >/dev/null; do sleep 0.1; done
     mkdir -p ~/Applications

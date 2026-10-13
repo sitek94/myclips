@@ -18,7 +18,7 @@ sink_front() { $D front | grep -q "dev.maciek.myclips.driver"; }
 abort() { echo "ABORT: $*"; restore; exit 1; }
 
 step "build and seed"
-scripts/bundle.sh >/dev/null && scripts/bundle.sh driver >/dev/null || exit 1
+UITEST=1 scripts/bundle.sh >/dev/null && scripts/bundle.sh driver >/dev/null || exit 1
 xcrun swift build -c release --product MyClipsSeed >/dev/null && .build/release/MyClipsSeed "$WORK/data" >/dev/null || exit 1
 
 step "test myClips (paused, synthetic data)"
