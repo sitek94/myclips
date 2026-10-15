@@ -11,7 +11,10 @@ R="$WORK/sink.txt"
 mkdir -p "$SHOTS"; rm -f "$R"
 
 step() { echo "== $*"; }
-frame() { $D windows "$1" | grep "$2" | grep "onscreen=1" | head -1 | sed -E 's/.*frame=([0-9.]+),([0-9.]+),([0-9.]+),([0-9.]+).*/\1 \2 \3 \4/'; }
+# frame <owner> <pattern>: "x y w h id" of the first matching on-screen window.
+frame() { $D windows "$1" | grep "$2" | grep "onscreen=1" | head -1 | sed -E 's/id=([0-9]+).*frame=([0-9.]+),([0-9.]+),([0-9.]+),([0-9.]+).*/\2 \3 \4 \5 \1/'; }
+# click <window id> <x> <y> [mods]: a global click that the driver refuses unless that window is topmost there.
+click() { local id=$1; shift; out=$($D globalclick "$@" "window=$id"); [[ $out == ok ]] || abort "click $*: $out"; }
 shelf() { $D windows myClips | grep layer=3 | grep -E "frame=[0-9.]+,[0-9.]+,[0-9]{4}" | grep -o "onscreen=[a-z0-9]*" | head -1; }
 restore() { pkill -x myClips; while pgrep -x myClips >/dev/null; do sleep 0.1; done; open ~/Applications/myClips.app; echo "installed myClips restarted"; }
 sink_front() { $D front | grep -q "dev.maciek.myclips.driver"; }
@@ -29,9 +32,9 @@ until pgrep -x myClips >/dev/null; do sleep 0.2; done; sleep 1
 step "sink to front"
 open -n build/myClipsDriver.app --args sinkapp "$R" 60
 sleep 2
-read -r SX SY _ _ <<<"$(frame myClipsDriver 'frame=200,')"
+read -r SX SY _ _ SID <<<"$(frame myClipsDriver 'frame=200,')"
 [[ -n "${SX:-}" ]] || abort "no sink window"
-$D globalclick $((${SX%.*} + 200)) $((${SY%.*} + 100)) >/dev/null; sleep 0.6
+click "$SID" $((${SX%.*} + 200)) $((${SY%.*} + 100)); sleep 0.6
 sink_front || abort "sink not frontmost ($($D front))"
 
 step "multi-select paste: Hyper+V, shift+right x2, Return"
@@ -42,14 +45,15 @@ $D globalkey return >/dev/null; sleep 1.2
 
 step "cmd-click cards 1 and 3"
 $D globalkey ctrl+opt+shift+cmd+v >/dev/null; sleep 0.7
-read -r X Y _ _ <<<"$(frame myClips 'layer=3')"
+read -r X Y _ _ ID <<<"$(frame myClips 'layer=3')"
 [[ -n "${X:-}" ]] || abort "shelf did not open"
-$D globalclick $((${X%.*} + 134)) $((${Y%.*} + 190)) >/dev/null; sleep 0.2
-$D globalclick $((${X%.*} + 640)) $((${Y%.*} + 190)) cmd >/dev/null; sleep 0.3
+# The centers of the first and third cards' boxes (cells 255 wide from x 20, a pinned rule after the first).
+click "$ID" $((${X%.*} + 147)) $((${Y%.*} + 130)); sleep 0.2
+click "$ID" $((${X%.*} + 660)) $((${Y%.*} + 130)) cmd; sleep 0.3
 $D screenshot "$SHOTS/cmd-click.png" >/dev/null
 
 step "type filter: Images, then reset on reopen"
-$D globalclick $((${X%.*} + 349)) $((${Y%.*} + 28)) >/dev/null; sleep 0.6
+click "$ID" $((${X%.*} + 325)) $((${Y%.*} + 27)); sleep 0.6
 for _ in 1 2 3 4; do $D globalkey down >/dev/null; done
 $D globalkey return >/dev/null; sleep 0.6
 $D screenshot "$SHOTS/images-only.png" >/dev/null
@@ -59,7 +63,7 @@ $D screenshot "$SHOTS/reopened.png" >/dev/null
 
 step "outside click closes the shelf"
 echo -n "before: "; shelf
-$D globalclick $((${SX%.*} + 200)) $((${SY%.*} + 100)) >/dev/null; sleep 0.6
+click "$SID" $((${SX%.*} + 200)) $((${SY%.*} + 100)); sleep 0.6
 echo -n "after: "; shelf
 
 step "sink result (expect three seeded clips, one per line)"

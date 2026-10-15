@@ -51,7 +51,7 @@ final class AppModel {
     ) { [weak self] in self?.panel.toggle() }
     @ObservationIgnored private var permissionTimer: Timer?
     @ObservationIgnored private var capturesSincePrune = 0
-    @ObservationIgnored private lazy var settingsWindow = SettingsWindow(title: "myClips Settings", tint: .brand) { [unowned self] in
+    @ObservationIgnored private lazy var settingsWindow = SettingsWindow(title: "myClips Settings") { [unowned self] in
         SettingsSections(app: self)
     }
     @ObservationIgnored private let log = Logger(subsystem: "dev.maciek.myclips", category: "app")

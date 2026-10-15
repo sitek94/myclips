@@ -13,9 +13,14 @@ struct PanelView: View {
     // One focus state for the whole panel; separate ones fought over first responder.
     @FocusState private var focus: PanelField?
 
+    /// The top bar's distance from the strip's top; the cards and the bar's ends from its sides.
+    static let barTop: CGFloat = 14
+    static let sideInset: CGFloat = 20
+
     var body: some View {
-        VStack(spacing: .space3) {
+        VStack(spacing: 0) {
             TopBar(model: model, app: app, focus: $focus)
+                .padding(.top, Self.barTop)
             if model.clips.isEmpty {
                 ContentUnavailableView(
                     model.query.isEmpty && model.kind == nil ? "Nothing here yet" : "No matches",
@@ -26,13 +31,10 @@ struct PanelView: View {
                 CardStrip(model: model, openPreview: openPreview)
             }
         }
-        .padding(.top, .space3)
-        .padding(.bottom, .space4)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toast(model.flash)
         .panelSurface()
         .ignoresSafeArea()
-        .tint(.brand)
         .onChange(of: model.openCount, initial: true) {
             // Focus may still read .search from the last opening; cycle it so the field really takes focus.
             focus = nil
@@ -66,11 +68,11 @@ private struct TopBar: View {
             BoardChips(model: model, focus: focus)
             Spacer(minLength: 0)
             PermissionButtons(app: app)
-            GearMenu(appName: "myClips", openSettings: app.showSettings) {
+            PanelMenu(appName: "myClips", openSettings: app.showSettings) {
                 AppActions(app: app)
             }
         }
-        .padding(.horizontal, .space4)
+        .padding(.horizontal, PanelView.sideInset)
     }
 }
 
@@ -180,7 +182,7 @@ private struct BoardChips: View {
                 } else {
                     Button("New Pinboard", systemImage: "plus") { model.startNewBoard() }
                         .labelStyle(.iconOnly)
-                        .buttonStyle(.pillIcon)
+                        .buttonStyle(.ghost)
                         .help("New pinboard (⌘N)")
                 }
             }
@@ -193,7 +195,7 @@ private struct BoardChips: View {
         Button(action: action) {
             Label(title, systemImage: systemImage).labelStyle(.titleAndIcon)
         }
-        .buttonStyle(.pill(selected: selected))
+        .buttonStyle(.chip(selected: selected))
     }
 }
 
@@ -206,12 +208,13 @@ private struct CardStrip: View {
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(spacing: .space3) {
+                LazyHStack(alignment: .top, spacing: 0) {
                     ForEach(Array(model.clips.enumerated()), id: \.element.id) { index, clip in
                         ClipCard(
                             clip: clip, shortcut: index < 9 ? index + 1 : nil,
                             selected: model.selected.contains(clip.id), model: model
                         )
+                        .frame(width: ClipCard.cell.width, height: ClipCard.cell.height)
                         .id(clip.id)
                         // One handler reading the click count: a separate count-2 gesture makes
                         // SwiftUI hold every single click until the double-click interval passes.
@@ -227,12 +230,12 @@ private struct CardStrip: View {
                         }
                         // Pinned clips lead History; a rule marks where they end.
                         if clip.isPinned, model.board == nil, index + 1 < model.clips.count, !model.clips[index + 1].isPinned {
-                            Capsule().fill(.secondary.opacity(0.5)).frame(width: 3, height: 160)
+                            Capsule().fill(.secondary.opacity(0.5)).frame(width: 3, height: ClipCard.box.height)
+                                .padding(.top, ClipCard.boxTop)
                         }
                     }
                 }
-                .padding(.horizontal, .space4)
-                .padding(.vertical, .space1)
+                .padding(.horizontal, PanelView.sideInset)
             }
             .scrollClipDisabled()
             .onChange(of: model.cursor) { _, id in

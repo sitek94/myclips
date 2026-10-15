@@ -30,7 +30,7 @@ macOS 26 asks before an app reads the clipboard programmatically. myClips needs 
 
 ## The shelf
 
-A myKit `FloatingPanel` (a titled, non-activating `NSPanel` with the title bar hidden; see [decision 002](decisions/002-non-activating-panel.md)) placed along the bottom of the screen under the mouse. It takes keyboard focus **without activating myClips**, so the app you were in stays frontmost and receives the paste.
+A myKit `StripPanel` (a `FloatingPanel`: a titled, non-activating `NSPanel` with the title bar hidden; see [decision 002](decisions/002-non-activating-panel.md)) along the bottom of the screen under the mouse, 40 pt from the edges. It slides in and out; before a paste it closes at once, because while it slides out it would still take the ⌘V. It takes keyboard focus **without activating myClips**, so the app you were in stays frontmost and receives the paste.
 
 - Keys go through one local event monitor in `PanelController.handle`; letters are matched by character so shortcuts follow the keyboard layout.
 - It closes on `Esc`, the hotkey, a paste, a click outside or another app activating — but not when the screenshot UI (`screencaptureui`) is up, so you can screenshot it. `FloatingPanel` watches the clicks and app switches; `PanelController` handles the keys.

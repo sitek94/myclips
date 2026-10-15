@@ -2,7 +2,20 @@ import MyClipsCore
 import MyKit
 import SwiftUI
 
+/// One clip, as a card: the content in a rounded box with the source app's icon at
+/// its corner; under it the time, or Paste on the card the keys act on. The accent ring marks the selection.
 struct ClipCard: View {
+    static let cell = CGSize(width: 255, height: 210)
+    static let box = CGSize(width: 185, height: 130)
+    static let boxTop: CGFloat = 25
+    static let iconSize: CGFloat = 40
+    static let pinSize: CGFloat = 22
+    /// The app icon's corner from the box's bottom-right corner.
+    static let iconOutset: CGFloat = 15
+    static let pasteBottom: CGFloat = 15
+    static let timeBottom: CGFloat = 20
+    static let timeHeight: CGFloat = 20
+
     let clip: Clip
     let shortcut: Int?
     let selected: Bool
@@ -10,51 +23,58 @@ struct ClipCard: View {
     @State private var thumbnail: NSImage?
     private var isCursor: Bool { model.cursor == clip.id }
 
-    static let size = CGSize(width: 232, height: 232)
-
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            header
-            content
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .padding(.space3)
-            footer
+        ZStack(alignment: .top) {
+            box.padding(.top, Self.boxTop)
+            VStack {
+                Spacer()
+                if isCursor {
+                    Button(model.selected.count > 1 ? "⏎ Paste \(model.selected.count)" : "⏎ Paste") {
+                        model.pasteSelection(plainText: false)
+                    }
+                    .buttonStyle(.smallPrimary)
+                    .padding(.bottom, Self.pasteBottom)
+                } else {
+                    footer
+                }
+            }
         }
-        .frame(width: Self.size.width, height: Self.size.height)
-        .contentSurface()
-        .clipShape(.rect(cornerRadius: .radiusCard))
-        .overlay {
-            RoundedRectangle(cornerRadius: .radiusCard)
-                .strokeBorder(selected ? Color.brand : .primary.opacity(0.08), lineWidth: selected ? (isCursor ? 3.5 : 2.5) : 1)
-        }
-        .shadow(color: .black.opacity(selected ? 0.25 : 0.12), radius: selected ? 10 : 5, y: 3)
-        .scaleEffect(selected ? 1.0 : 0.97)
-        .animation(.quick, value: selected)
+        .contentShape(.rect)
+        .help("\(kindTitle), \(footerText)")
         .task(id: clip.id) {
             thumbnail = await model.thumbnail(for: clip)
         }
     }
 
-    private var header: some View {
-        HStack(spacing: .space2) {
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: .space1) {
-                    if clip.isPinned { Image(systemName: "pin.fill").font(.textCaption) }
-                    Text(kindTitle).font(.textHeadline)
+    private var box: some View {
+        content
+            .frame(width: Self.box.width, height: Self.box.height)
+            .background(.background)
+            .clipShape(.rect(cornerRadius: .radiusCard))
+            .overlay(RoundedRectangle(cornerRadius: .radiusCard).strokeBorder(.gray.opacity(0.2)))
+            .shadow(color: .black.opacity(0.3), radius: 13, y: 5)
+            .selectionRing(selected)
+            .overlay(alignment: .topLeading) {
+                // On the corner, outside the content: a pin inside the box would cover the first letters.
+                if clip.isPinned {
+                    Image(systemName: "pin.fill")
+                        .font(.textCaption)
+                        .frame(width: Self.pinSize, height: Self.pinSize)
+                        .background(.background, in: .circle)
+                        .shadow(color: .black.opacity(0.3), radius: 3, y: 1)
+                        .offset(x: -Self.pinSize / 3, y: -Self.pinSize / 3)
+                        .accessibilityLabel("Pinned")
                 }
-                // Full white: a dimmed white is hard to read on the bright header colors.
-                Text(clip.usedAt.formatted(.relative(presentation: .named)))
-                    .font(.textCaption)
             }
-            Spacer(minLength: 0)
-            if let icon = model.icon(for: clip.sourceBundleID) {
-                Image(nsImage: icon).resizable().frame(width: 30, height: 30)
+            .overlay(alignment: .bottomTrailing) {
+                if let icon = model.icon(for: clip.sourceBundleID) {
+                    Image(nsImage: icon)
+                        .resizable()
+                        .frame(width: Self.iconSize, height: Self.iconSize)
+                        .shadow(color: .black.opacity(0.3), radius: 6, y: 2)
+                        .offset(x: Self.iconOutset, y: Self.iconOutset)
+                }
             }
-        }
-        .foregroundStyle(clip.hexIsLight ? .black : .white)
-        .padding(.horizontal, .space3)
-        .padding(.vertical, .space2)
-        .background(accent.gradient)
     }
 
     @ViewBuilder
@@ -62,52 +82,54 @@ struct ClipCard: View {
         switch clip.kind {
         case .image:
             if let thumbnail {
-                Image(nsImage: thumbnail).resizable().scaledToFit()
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                Image(nsImage: thumbnail).resizable().scaledToFill()
             } else {
                 // swiftlint:disable:next system_font
                 Image(systemName: "photo").font(.system(size: 34)).foregroundStyle(.secondary)  // a symbol used as a picture
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
         case .file:
-            VStack(alignment: .leading, spacing: .space2) {
+            VStack(spacing: .space2) {
                 if let thumbnail {
                     Image(nsImage: thumbnail).resizable().scaledToFit()
-                        .frame(maxWidth: .infinity, maxHeight: 110)
                 } else {
                     // swiftlint:disable:next system_font
                     Image(systemName: "doc.fill").font(.system(size: 34)).foregroundStyle(.secondary)  // a symbol used as a picture
                 }
-                Text(fileNames).font(.textCallout.weight(.medium)).lineLimit(thumbnail == nil ? 3 : 1)
+                Text(fileNames).font(.textCaption.weight(.medium)).lineLimit(1)
             }
+            .padding(.space3)
         case .link:
-            VStack(alignment: .leading, spacing: .space2) {
+            VStack(alignment: .leading, spacing: .space1) {
                 Text(URL(string: clip.preview)?.host() ?? clip.preview).font(.textCallout.weight(.semibold)).lineLimit(1)
-                Text(clip.preview).font(.textCaption).foregroundStyle(.tint).lineLimit(5)
+                Text(clip.preview).font(.textCaption).foregroundStyle(.tint).lineLimit(4)
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(.space3)
         case .text:
             if let color = hexColor {
-                RoundedRectangle(cornerRadius: .radiusInner).fill(color)
-                    .overlay(
-                        Text(clip.preview.uppercased()).font(.textCallout.monospaced().weight(.semibold)).foregroundStyle(.white).shadow(radius: 2))
+                color.overlay(
+                    Text(clip.preview.uppercased()).font(.textCallout.monospaced().weight(.semibold)).foregroundStyle(.white).shadow(radius: 2))
             } else {
                 Text(clip.preview.trimmingCharacters(in: .whitespacesAndNewlines))
-                    .font(.textCallout)
-                    .lineLimit(8)
+                    .font(.textCaption)
+                    .lineLimit(7)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                    .padding(.space3)
             }
         }
     }
 
+    /// The time it was last used, and ⌘1–⌘9 on the first nine cards.
     private var footer: some View {
-        HStack {
-            Text(footerText)
-            Spacer()
-            if let shortcut { Text("⌘\(shortcut)") }
+        HStack(spacing: .space2) {
+            if let shortcut { Text("⌘\(shortcut)").monospacedDigit() }
+            Text(clip.usedAt.formatted(.relative(presentation: .named)))
         }
-        .font(.textCaption.monospacedDigit())
-        .foregroundStyle(.secondary)
-        .padding(.horizontal, .space3)
-        .padding(.bottom, .space2)
+        .font(.textBody)
+        .foregroundStyle(.primary.opacity(0.5))
+        .lineLimit(1)
+        .frame(height: Self.timeHeight)
+        .padding(.bottom, Self.timeBottom)
     }
 
     private var kindTitle: String {
@@ -116,16 +138,6 @@ struct ClipCard: View {
         case .link: "Link"
         case .image: "Image"
         case .file: "File"
-        }
-    }
-
-    private var accent: Color {
-        switch clip.kind {
-        case .text: hexColor ?? .indigo
-        // Darker than system teal: white text on it was hard to read.
-        case .link: .teal.mix(with: .black, by: 0.25)
-        case .image: .pink
-        case .file: .brown
         }
     }
 

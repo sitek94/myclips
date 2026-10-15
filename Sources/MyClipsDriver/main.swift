@@ -10,7 +10,8 @@
 //   key <combo>                   to the myClips process only, e.g. esc, right, shift+return
 //   type <text>                   to the myClips process only
 //   globalkey <combo>             system-wide; only while the user is hands-off
-//   globalclick <x> <y> [right] [cmd] [shift]   system-wide click; only while the user is hands-off
+//   globalclick <x> <y> [right] [cmd] [shift] [window=<id>]   system-wide click; only while the user is hands-off.
+//                                 With window=<id> it refuses unless that window is topmost at the point.
 //   toggle                        open/close the shelf of a myClips launched with -uiTest YES
 //   click <x> <y>                 to the myClips process only; global top-left coordinates
 //   front                         frontmost app
@@ -88,6 +89,32 @@ func windowList(owner: String) -> String {
     }.joined(separator: "\n")
 }
 
+/// The topmost on-screen window at a point (global top-left coordinates): its id and owner.
+func windowAt(_ point: CGPoint) -> (id: CGWindowID, owner: String)? {
+    let all = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []
+    for info in all {
+        let alpha = info[kCGWindowAlpha as String] as? Double ?? 1
+        let owner = info[kCGWindowOwnerName as String] as? String ?? ""
+        guard alpha > 0, owner != "Window Server", let bounds = info[kCGWindowBounds as String] as? NSDictionary,
+            let frame = CGRect(dictionaryRepresentation: bounds), frame.contains(point),
+            let id = info[kCGWindowNumber as String] as? CGWindowID
+        else { continue }
+        return (id, owner)
+    }
+    return nil
+}
+
+/// For `window=<id>` in a global click: an error unless that window is the topmost one at the point, so a click
+/// meant for a test window never lands in the user's app.
+func refuseUnlessWindow(_ args: [String], at point: CGPoint) -> (String, Int32)? {
+    guard let expected = args.first(where: { $0.hasPrefix("window=") }).flatMap({ CGWindowID($0.dropFirst(7)) }) else { return nil }
+    let top = windowAt(point)
+    guard top?.id == expected else {
+        return ("refused: topmost at \(Int(point.x)),\(Int(point.y)) is \(top.map { "\($0.id) \($0.owner)" } ?? "none")", 1)
+    }
+    return nil
+}
+
 func screenshot(path: String, owner: String) async -> (String, Int32) {
     do {
         let content = try await SCShareableContent.excludingDesktopWindows(true, onScreenWindowsOnly: true)
@@ -140,7 +167,10 @@ var busy = false
         typeText(args.joined(separator: " "), to: pid)
         return ("ok", 0)
     case "globalclick":
-        guard args.count >= 2, let x = Double(args[0]), let y = Double(args[1]) else { return ("usage: globalclick x y [right] [cmd] [shift]", 2) }
+        guard args.count >= 2, let x = Double(args[0]), let y = Double(args[1]) else {
+            return ("usage: globalclick x y [right] [cmd] [shift] [window=<id>]", 2)
+        }
+        if let refused = refuseUnlessWindow(args, at: CGPoint(x: x, y: y)) { return refused }
         let options = Set(args.dropFirst(2))
         let right = options.contains("right")
         var flags: CGEventFlags = []

@@ -15,35 +15,32 @@ final class PreviewPanel: OverlayPanel {
     }
 }
 
-/// Shows the shelf along the bottom of the screen under the mouse, in a myKit `FloatingPanel`:
+/// Shows the shelf along the bottom of the screen under the mouse, in a myKit `StripPanel` (a `FloatingPanel`):
 /// it takes typing without activating myClips, so the app you were in stays frontmost and receives the paste.
 /// Closes on Esc, the hotkey, a paste, a click outside, or another app activating;
 /// it stays open when focus moves to system UI such as the screenshot tool.
 final class PanelController {
-    static let height: CGFloat = 330
-    static let margin: CGFloat = 8
+    /// The top bar and a row of cards.
+    static let height: CGFloat = 260
 
     let model: PanelModel
     weak var app: AppModel? {
         didSet {
             guard let app else { return }
-            panel.setContent(tint: .brand) {
+            panel.setContent {
                 PanelView(model: model, app: app, openPreview: { [weak self] in self?.setPreview(true) })
             }
         }
     }
     // UI test runs happen on a Mac someone is using; their clicks must not close the shelf.
-    private let panel = FloatingPanel(
-        contentRect: NSRect(x: 0, y: 0, width: 1200, height: PanelController.height),
-        options: .init(closesOnOutsideClick: !AppModel.uiTest)
-    )
+    private let panel = StripPanel(edge: .bottom, height: PanelController.height, options: .init(closesOnOutsideClick: !AppModel.uiTest))
     private let previewPanel = PreviewPanel()
     private var keyMonitor: Any?
     private let log = Logger(subsystem: "dev.maciek.myclips", category: "panel")
 
     init(model: PanelModel) {
         self.model = model
-        let preview = NSHostingView(rootView: PreviewView(model: model).tint(.brand))
+        let preview = NSHostingView(rootView: PreviewView(model: model))
         preview.sizingOptions = []
         previewPanel.contentView = preview
         panel.onClose = { [weak self] reason in self?.didClose(reason) }
@@ -62,21 +59,14 @@ final class PanelController {
         previousApp = front?.processIdentifier == ProcessInfo.processInfo.processIdentifier ? previousApp : front
         model.prepareForOpen()
         let mouse = NSEvent.mouseLocation
-        let screen = NSScreen.screens.first { $0.frame.contains(mouse) } ?? NSScreen.main
-        if let visible = screen?.visibleFrame {
-            panel.setFrame(
-                NSRect(
-                    x: visible.minX + Self.margin, y: visible.minY + Self.margin,
-                    width: visible.width - 2 * Self.margin, height: Self.height),
-                display: false
-            )
-        }
-        panel.present()
+        guard let screen = NSScreen.screens.first(where: { $0.frame.contains(mouse) }) ?? NSScreen.main else { return }
+        panel.show(on: screen)
         startKeyMonitor()
     }
 
+    /// Before a paste the shelf closes at once: while it slides out it still takes keys, and so the ⌘V.
     func hide(_ reason: String) {
-        panel.dismiss(reason)
+        panel.dismiss(reason, animated: reason != "paste")
     }
 
     /// After every close, whoever started it: this controller, or the panel itself (outside click, app switch).
@@ -139,7 +129,8 @@ final class PanelController {
     private func startKeyMonitor() {
         if let keyMonitor { NSEvent.removeMonitor(keyMonitor) }
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard let self else { return event }
+            // Only keys for the open shelf: not while it slides out after Esc, and not for the preview or Settings.
+            guard let self, self.panel.isKeyWindow, !self.panel.isClosing else { return event }
             return self.handle(event) ? nil : event
         }
     }

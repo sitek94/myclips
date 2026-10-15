@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 — 2026-10-15
+
+- A new look, shared with myCapture: the shelf is a glass strip 40 pt from the screen edges that slides in and out. Each card shows the clip in a rounded box with the source app's icon at its corner; under it the time and ⌘1–⌘9, or **⏎ Paste** on the card the keys act on. The selection is an accent ring.
+- The system accent color (System Settings → Appearance) replaces myClips' orange; orange stays in the app icon.
+- Pinboards are small pills; New Pinboard and the menu are plain icons (+ and •••) in the top bar.
+
 ## 0.3.0 — 2026-10-13
 
 - Settings, the Clear History alert and the app picker open in front of the active app. Settings opens centered, on the current Space, and Esc closes it.

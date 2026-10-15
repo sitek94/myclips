@@ -17,4 +17,4 @@ This file is a map, not the docs. Open the page that owns the task:
 - UI work runs on synthetic data in safe mode (docs/testing.md). System-wide keys and clicks only with the user's go-ahead and hands off the Mac.
 - Bug fixes get a regression test; schema changes get a migration step and an upgrade test.
 - New version: bump `VERSION` in `scripts/bundle.sh`, list user-visible changes under a new heading in [CHANGELOG.md](./CHANGELOG.md), tag `vX.Y.Z`.
-- Clean room: no code, assets or text from Paste or other apps.
+- No code, assets or text from other apps in this repo.

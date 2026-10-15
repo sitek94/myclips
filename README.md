@@ -7,7 +7,7 @@ A small clipboard manager for macOS 26, built for one person: me.
 ![myClips: the shelf along the bottom of the screen, with a large preview of the selected image](docs/images/preview.png)
 
 > [!NOTE]
-> **Personal project.** myClips is a clean-room rebuild of the parts of [Paste](https://pasteapp.io) I actually use, with everything else left out. It is not affiliated with Paste or its makers and contains no code from it. The code is public in case it's useful to someone; I build it for my own Mac, so there are no releases, no roadmap and no support. **Pull requests are not accepted** — fork it and make it yours. Bug reports are welcome (see [CONTRIBUTING](CONTRIBUTING.md)).
+> **Personal project.** myClips is my own small clipboard manager, with only the features I use. The code is public in case it's useful to someone; I build it for my own Mac, so there are no releases, no roadmap and no support. **Pull requests are not accepted** — fork it and make it yours. Bug reports are welcome (see [CONTRIBUTING](CONTRIBUTING.md)).
 
 ## What it does
 
