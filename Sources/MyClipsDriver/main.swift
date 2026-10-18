@@ -95,7 +95,10 @@ func windowAt(_ point: CGPoint) -> (id: CGWindowID, owner: String)? {
     for info in all {
         let alpha = info[kCGWindowAlpha as String] as? Double ?? 1
         let owner = info[kCGWindowOwnerName as String] as? String ?? ""
-        guard alpha > 0, owner != "Window Server", let bounds = info[kCGWindowBounds as String] as? NSDictionary,
+        // While a notification shows, Notification Center's host window spans the screen; the notification itself
+        // sits at the top-right and clicks elsewhere pass through.
+        guard alpha > 0, !["Window Server", "Notification Center"].contains(owner),
+            let bounds = info[kCGWindowBounds as String] as? NSDictionary,
             let frame = CGRect(dictionaryRepresentation: bounds), frame.contains(point),
             let id = info[kCGWindowNumber as String] as? CGWindowID
         else { continue }

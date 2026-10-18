@@ -41,10 +41,10 @@ The global shortcut is a myKit `GlobalShortcut` (Carbon's `RegisterEventHotKey`,
 
 ## Pasting
 
-1. Write the clip to the clipboard: all its stored types; or plain text; or, for several clips, one item with their texts joined plus RTFD with images in order (`MultiClip`).
+1. Write the clip to the clipboard: all its stored types; or plain text; or, for several files, every file as Finder copied it (so Finder pastes them all); or, for several other clips, one item with their texts joined plus RTFD with images in order (`MultiClip`).
 2. Record that change count so the watcher ignores it.
 3. Hide the shelf, hand focus back to the previous app if myClips somehow became active, and post `⌘V` with `CGEvent`. The key code for "v" is looked up in the current keyboard layout, so it works on Dvorak, AZERTY and others. This needs Accessibility; without it the clip simply stays on the clipboard.
 
 ## Dragging
 
-A myKit `DragSource` watches mouse presses in the shelf window, so SwiftUI keeps its clicks, double-clicks and menus. A press that moves 3 pt on a card (found from the card frames the strip reports) drags that card, or the whole selection when the card is in it: every pasteboard item of every clip, with all its stored types, as one pile; each card shows as a snapshot of itself. The store is an actor, so the drag start waits for its read (milliseconds; at most a second). When the pointer leaves the shelf, the shelf slides away so the drop target behind it is visible.
+A myKit `DragSource` watches mouse presses in the shelf window, so SwiftUI keeps its clicks, double-clicks and menus. A press that moves 3 pt on a card (found from the card frames the strip reports) drags that card, or the whole selection when the card is in it: every pasteboard item of every clip, with all its stored types, as one pile; each card shows as a picture of itself, copied from the screen. Text and image clips are also file promises (`ClipFilePromise`), so Finder gets a .txt or .png instead of a clipping or nothing; other apps still take the stored types. The drag is made right after the press (`DragSource.onPress`): copying the card pictures takes 10–25 ms each, and made at the drag start it made the drag stutter. The store is an actor, so making a drag waits for its read (about a millisecond; at most a second). When the pointer leaves the shelf, the shelf slides away so the drop target behind it is visible.

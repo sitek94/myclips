@@ -40,6 +40,7 @@ final class PanelModel {
     @ObservationIgnored let store: Store
     /// Where each visible card is, in the shelf's SwiftUI coordinates: a drag starts on the card under the press.
     @ObservationIgnored var cardFrames: [Int64: CGRect] = [:]
+    @ObservationIgnored var preparedDrag: PreparedDrag?
     @ObservationIgnored private var loadTask: Task<Void, Never>?
     @ObservationIgnored private var icons: [String: NSImage] = [:]
     @ObservationIgnored private var headerColors: [String: RGB] = [:]

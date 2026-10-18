@@ -161,13 +161,19 @@ final class AppModel {
         Task { _ = await write(clips, plainText: false) }
     }
 
-    /// One clip goes on the clipboard with all its representations (or as plain text). Several go as
-    /// one item: their texts one per line, plus rich text with images in shelf order (unless plain text
-    /// was asked for). Returns false when there was nothing to write.
+    /// One clip goes on the clipboard with all its representations (or as plain text). Several files go as
+    /// Finder copied them. Other mixes go as one item: their texts one per line, plus rich text with images in
+    /// shelf order (unless plain text was asked for). Returns false when there was nothing to write.
     private func write(_ clips: [Clip], plainText: Bool) async -> Bool {
         if let clip = clips.first, clips.count == 1 {
             guard let reps = try? await store.representations(of: clip.id), !reps.isEmpty else { return false }
             Paster.write(reps, plainText: plainText ? Self.string(in: reps) : nil)
+        } else if !plainText, clips.allSatisfy({ $0.kind == .file }) {
+            // Only files: each as Finder copied it, so Finder can paste them all.
+            var items: [NSPasteboardItem] = []
+            for clip in clips { items += Paster.items((try? await store.representations(of: clip.id)) ?? []) }
+            guard !items.isEmpty else { return false }
+            Paster.write(items: items)
         } else {
             var parts: [MultiClip.Part] = []
             for clip in clips {

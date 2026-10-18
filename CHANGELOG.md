@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1 — 2026-10-18
+
+- Dragging text or an image into Finder makes a .txt or .png file (it made a clipping, or nothing for an image). Other apps still get the text or the image.
+- Copying several files (⌘C) and pasting in Finder pastes all of them.
+- A drag starts without a stutter: the shelf gets it ready when you press a card.
+
 ## 0.5.0 — 2026-10-18
 
 - The shelf sits on the bottom edge of the screen: full width, 8 pt in, over the Dock; it slides up and back down.

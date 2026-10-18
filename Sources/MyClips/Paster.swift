@@ -25,6 +25,11 @@ enum Paster {
         }
     }
 
+    static func write(items: [NSPasteboardItem]) {
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.writeObjects(items)
+    }
+
     /// One item with plain text, and rich text when given.
     static func write(plainText: String, rtfd: Data?) {
         let item = NSPasteboardItem()

@@ -97,8 +97,13 @@ func file(_ path: String) -> ClipPayload {
         sourceBundleID: "com.apple.finder", sourceName: "Finder")
 }
 
+/// A second file, so tests can copy several files.
+let notesURL = URL(filePath: dir).appending(path: "Notes.txt")
+try Data("Shopping list".utf8).write(to: notesURL)
+
 // Oldest first; the last one shows first in the shelf.
 let clips: [ClipPayload] = [
+    file(notesURL.path),
     text("Groceries: oat milk, eggs, coffee beans, basil", "com.apple.Notes", "Notes"),
     text("Café Zürich, Bahnhofstrasse 12, 8001 Zürich", "com.apple.Maps", "Maps"),
     file(screenshotURL.path),

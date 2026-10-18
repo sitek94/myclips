@@ -51,7 +51,12 @@ final class PanelController {
         panel.onClose = { [weak self] reason in self?.didClose(reason) }
         dragSource.items = { [weak self] point in
             guard let self else { return [] }
-            return self.model.dragItems(at: self.dragSource.contentPoint(point))
+            return self.model.dragItems(at: self.dragSource.contentPoint(point), onScreen: self.picture)
+        }
+        dragSource.onPress = { [weak self] point in
+            // A fast drag can start before this runs; it made its own items.
+            guard let self, !self.dragSource.isDragging else { return }
+            self.model.prepareDrag(at: self.dragSource.contentPoint(point), onScreen: self.picture)
         }
         // The shelf covers the bottom of the screen; it steps aside for the drop target.
         dragSource.onLeaveWindow = { [weak self] in self?.hide("drag") }
@@ -100,6 +105,18 @@ final class PanelController {
         let height = min(680, visible.maxY - bottom - 20)
         previewPanel.setFrame(NSRect(x: shelf.midX - width / 2, y: bottom, width: width, height: height), display: true)
         previewPanel.orderFront(nil)
+    }
+
+    /// What the shelf shows in this rect (SwiftUI coordinates), a little see-through: a card's drag picture, copied
+    /// from the screen instead of drawn again. Nil when the rect is not fully in view.
+    private func picture(of frame: CGRect) -> NSImage? {
+        guard let view = panel.contentView else { return nil }
+        let rect = CGRect(x: frame.minX, y: view.bounds.height - frame.maxY, width: frame.width, height: frame.height)
+        guard view.bounds.contains(rect), let bitmap = view.bitmapImageRepForCachingDisplay(in: rect) else { return nil }
+        view.cacheDisplay(in: rect, to: bitmap)
+        return NSImage(size: rect.size, flipped: false) { bounds in
+            bitmap.draw(in: bounds, from: .zero, operation: .sourceOver, fraction: 0.8, respectFlipped: false, hints: nil)
+        }
     }
 
     /// ⌘K: the same actions as right-click, for the selection, from the keyboard.
