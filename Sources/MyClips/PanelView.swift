@@ -14,11 +14,11 @@ struct PanelView: View {
     @FocusState private var focus: PanelField?
 
     /// The top bar's distance from the strip's top; the cards and the bar's ends from its sides.
-    static let barTop: CGFloat = 14
-    static let sideInset: CGFloat = 20
+    static let barTop: CGFloat = .space3
+    static let sideInset: CGFloat = .space6
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: .space6) {
             TopBar(model: model, app: app, focus: $focus)
                 .padding(.top, Self.barTop)
             if model.clips.isEmpty {
@@ -33,7 +33,7 @@ struct PanelView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .toast(model.flash)
-        .panelSurface()
+        .sheetSurface(edge: .bottom)
         .ignoresSafeArea()
         .onChange(of: model.openCount, initial: true) {
             // Focus may still read .search from the last opening; cycle it so the field really takes focus.
@@ -163,7 +163,7 @@ private struct BoardChips: View {
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: .space2) {
-                chip("History", systemImage: "clock", selected: model.board == nil) { model.board = nil }
+                chip("Clipboard", systemImage: "clock", selected: model.board == nil) { model.board = nil }
                 ForEach(model.pinboards) { board in
                     chip("\(board.name)  \(board.itemCount)", systemImage: "pin", selected: model.board == board.id) {
                         model.board = board.id
@@ -208,14 +208,19 @@ private struct CardStrip: View {
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView(.horizontal, showsIndicators: false) {
-                LazyHStack(alignment: .top, spacing: 0) {
+                LazyHStack(alignment: .top, spacing: ClipCard.spacing) {
                     ForEach(Array(model.clips.enumerated()), id: \.element.id) { index, clip in
                         ClipCard(
                             clip: clip, shortcut: index < 9 ? index + 1 : nil,
                             selected: model.selected.contains(clip.id), model: model
                         )
-                        .frame(width: ClipCard.cell.width, height: ClipCard.cell.height)
+                        .frame(width: ClipCard.size.width, height: ClipCard.size.height)
                         .id(clip.id)
+                        .onGeometryChange(for: CGRect.self) {
+                            $0.frame(in: .global)
+                        } action: {
+                            model.cardFrames[clip.id] = $0
+                        }
                         // One handler reading the click count: a separate count-2 gesture makes
                         // SwiftUI hold every single click until the double-click interval passes.
                         .onTapGesture {
@@ -228,10 +233,10 @@ private struct CardStrip: View {
                         .contextMenu {
                             ClipActionsMenu(actions: model.actions(for: model.targets(for: clip), openPreview: openPreview))
                         }
-                        // Pinned clips lead History; a rule marks where they end.
+                        // Pinned clips lead the Clipboard list; a rule marks where they end.
                         if clip.isPinned, model.board == nil, index + 1 < model.clips.count, !model.clips[index + 1].isPinned {
-                            Capsule().fill(.secondary.opacity(0.5)).frame(width: 3, height: ClipCard.box.height)
-                                .padding(.top, ClipCard.boxTop)
+                            Capsule().fill(.secondary.opacity(0.5)).frame(width: 3, height: ClipCard.size.height * 0.6)
+                                .frame(height: ClipCard.size.height)
                         }
                     }
                 }

@@ -15,7 +15,7 @@ step() { echo "== $*"; }
 frame() { $D windows "$1" | grep "$2" | grep "onscreen=1" | head -1 | sed -E 's/id=([0-9]+).*frame=([0-9.]+),([0-9.]+),([0-9.]+),([0-9.]+).*/\2 \3 \4 \5 \1/'; }
 # click <window id> <x> <y> [mods]: a global click that the driver refuses unless that window is topmost there.
 click() { local id=$1; shift; out=$($D globalclick "$@" "window=$id"); [[ $out == ok ]] || abort "click $*: $out"; }
-shelf() { $D windows myClips | grep layer=3 | grep -E "frame=[0-9.]+,[0-9.]+,[0-9]{4}" | grep -o "onscreen=[a-z0-9]*" | head -1; }
+shelf() { $D windows myClips | grep layer=24 | grep -E "frame=[0-9.]+,[0-9.]+,[0-9]{4},332" | grep -o "onscreen=[a-z0-9]*" | head -1; }
 restore() { pkill -x myClips; while pgrep -x myClips >/dev/null; do sleep 0.1; done; open ~/Applications/myClips.app; echo "installed myClips restarted"; }
 sink_front() { $D front | grep -q "dev.maciek.myclips.driver"; }
 abort() { echo "ABORT: $*"; restore; exit 1; }
@@ -45,15 +45,15 @@ $D globalkey return >/dev/null; sleep 1.2
 
 step "cmd-click cards 1 and 3"
 $D globalkey ctrl+opt+shift+cmd+v >/dev/null; sleep 0.7
-read -r X Y _ _ ID <<<"$(frame myClips 'layer=3')"
+read -r X Y _ _ ID <<<"$(frame myClips 'layer=24.*,332$')"
 [[ -n "${X:-}" ]] || abort "shelf did not open"
-# The centers of the first and third cards' boxes (cells 255 wide from x 20, a pinned rule after the first).
-click "$ID" $((${X%.*} + 147)) $((${Y%.*} + 130)); sleep 0.2
-click "$ID" $((${X%.*} + 660)) $((${Y%.*} + 130)) cmd; sleep 0.3
+# The centers of the first and third cards (232 wide, 24 apart from x 32, a pinned rule after the first).
+click "$ID" $((${X%.*} + 148)) $((${Y%.*} + 186)); sleep 0.2
+click "$ID" $((${X%.*} + 687)) $((${Y%.*} + 186)) cmd; sleep 0.3
 $D screenshot "$SHOTS/cmd-click.png" >/dev/null
 
 step "type filter: Images, then reset on reopen"
-click "$ID" $((${X%.*} + 325)) $((${Y%.*} + 27)); sleep 0.6
+click "$ID" $((${X%.*} + 340)) $((${Y%.*} + 29)); sleep 0.6
 for _ in 1 2 3 4; do $D globalkey down >/dev/null; done
 $D globalkey return >/dev/null; sleep 0.6
 $D screenshot "$SHOTS/images-only.png" >/dev/null

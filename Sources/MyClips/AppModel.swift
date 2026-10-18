@@ -37,6 +37,16 @@ final class AppModel {
             Task { [store, historyLimit] in try? await store.prune(keep: historyLimit) }
         }
     }
+    /// A sound when a clip is saved and when clips are pasted; off in UI test runs.
+    var playsSounds = UserDefaults.standard.object(forKey: "playsSounds") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(playsSounds, forKey: "playsSounds") }
+    }
+    var saveSound = UserDefaults.standard.string(forKey: "saveSound") ?? Sounds.Event.save.defaultName {
+        didSet { UserDefaults.standard.set(saveSound, forKey: "saveSound") }
+    }
+    var pasteSound = UserDefaults.standard.string(forKey: "pasteSound") ?? Sounds.Event.paste.defaultName {
+        didSet { UserDefaults.standard.set(pasteSound, forKey: "pasteSound") }
+    }
     /// User-added bundle IDs that are never captured, on top of `CaptureRules.defaultIgnoredApps`.
     var ignoredApps = UserDefaults.standard.stringArray(forKey: "ignoredApps") ?? [] {
         didSet { UserDefaults.standard.set(ignoredApps, forKey: "ignoredApps") }
@@ -45,6 +55,7 @@ final class AppModel {
     @ObservationIgnored let panel: PanelController
     @ObservationIgnored private let store: Store
     @ObservationIgnored private let watcher = PasteboardWatcher()
+    @ObservationIgnored let sounds = Sounds()
     /// ✦ V by default; the user can change it in Settings.
     @ObservationIgnored private(set) lazy var openShortcut = GlobalShortcut(
         name: "openShelf", default: Shortcut(keyCode: kVK_ANSI_V, modifiers: Shortcut.hyper)
@@ -110,6 +121,7 @@ final class AppModel {
         Task { [historyLimit] in
             do {
                 try await store.record(payload)
+                playSound(.save)
                 if prune { try await store.prune(keep: historyLimit) }
             } catch {
                 log.error("record failed: \(error.localizedDescription, privacy: .public)")
@@ -124,6 +136,7 @@ final class AppModel {
         panel.hide("paste")
         Task {
             guard await write(clips, plainText: plainText) else { return }
+            playSound(.paste)
             if clips.count == 1, let clip = clips.first { _ = try? await store.markUsed(clip.id) }
             guard AXIsProcessTrusted() else { return }  // clip stays on the pasteboard for a manual Cmd+V
             guard !Self.uiTest else {
@@ -136,6 +149,11 @@ final class AppModel {
             try? await Task.sleep(for: .milliseconds(60))
             Paster.sendPasteKeystroke()
         }
+    }
+
+    private func playSound(_ event: Sounds.Event) {
+        guard playsSounds, !Self.uiTest else { return }
+        sounds.play(named: event == .save ? saveSound : pasteSound)
     }
 
     /// ⌘C in the shelf: clipboard only; the shelf stays open and the list keeps its order.
@@ -183,9 +201,9 @@ final class AppModel {
     func clearHistory() {
         AppWindows.activate()
         let alert = NSAlert()
-        alert.messageText = "Clear clipboard history?"
-        alert.informativeText = "Pinned clips and clips on pinboards are kept."
-        alert.addButton(withTitle: "Clear History")
+        alert.messageText = "Clear the clipboard?"
+        alert.informativeText = "This removes every clip in Clipboard. Pinned clips and clips on pinboards stay."
+        alert.addButton(withTitle: "Clear Clipboard")
         alert.addButton(withTitle: "Cancel")
         guard alert.runModal() == .alertFirstButtonReturn else { return }
         Task { try? await store.clearHistory() }

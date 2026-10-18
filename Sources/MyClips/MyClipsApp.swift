@@ -52,6 +52,6 @@ struct AppActions: View {
         if let shortcut = app.openShortcut.shortcut, !app.openShortcut.isRegistered {
             Text("\(shortcut.displayText) is used by another app")
         }
-        Button("Clear History…") { app.clearHistory() }
+        Button("Clear Clipboard…") { app.clearHistory() }
     }
 }

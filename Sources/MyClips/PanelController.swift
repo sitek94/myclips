@@ -8,20 +8,22 @@ import os
 /// Floats the preview above the shelf without taking keyboard focus from it.
 final class PreviewPanel: OverlayPanel {
     init() {
-        super.init(level: .floating)
+        // The shelf sits at main-menu level, over the Dock; the preview must sit above it.
+        super.init(level: .mainMenu)
         isFloatingPanel = true
         collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .transient]
         hasShadow = true
     }
 }
 
-/// Shows the shelf along the bottom of the screen under the mouse, in a myKit `StripPanel` (a `FloatingPanel`):
+/// Shows the shelf as a sheet on the bottom edge of the screen under the mouse, over the Dock, in a myKit `StripPanel`
+/// (a `FloatingPanel`):
 /// it takes typing without activating myClips, so the app you were in stays frontmost and receives the paste.
 /// Closes on Esc, the hotkey, a paste, a click outside, or another app activating;
 /// it stays open when focus moves to system UI such as the screenshot tool.
 final class PanelController {
     /// The top bar and a row of cards.
-    static let height: CGFloat = 260
+    static let height: CGFloat = 332
 
     let model: PanelModel
     weak var app: AppModel? {
@@ -33,8 +35,10 @@ final class PanelController {
         }
     }
     // UI test runs happen on a Mac someone is using; their clicks must not close the shelf.
-    private let panel = StripPanel(edge: .bottom, height: PanelController.height, options: .init(closesOnOutsideClick: !AppModel.uiTest))
+    private let panel = StripPanel(
+        edge: .bottom, placement: .sheet, height: PanelController.height, options: .init(closesOnOutsideClick: !AppModel.uiTest))
     private let previewPanel = PreviewPanel()
+    private let dragSource: DragSource
     private var keyMonitor: Any?
     private let log = Logger(subsystem: "dev.maciek.myclips", category: "panel")
 
@@ -43,7 +47,14 @@ final class PanelController {
         let preview = NSHostingView(rootView: PreviewView(model: model))
         preview.sizingOptions = []
         previewPanel.contentView = preview
+        dragSource = DragSource(window: panel)
         panel.onClose = { [weak self] reason in self?.didClose(reason) }
+        dragSource.items = { [weak self] point in
+            guard let self else { return [] }
+            return self.model.dragItems(at: self.dragSource.contentPoint(point))
+        }
+        // The shelf covers the bottom of the screen; it steps aside for the drop target.
+        dragSource.onLeaveWindow = { [weak self] in self?.hide("drag") }
     }
 
     var isVisible: Bool { panel.isVisible }

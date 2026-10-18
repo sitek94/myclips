@@ -11,14 +11,18 @@ enum Paster {
             pasteboard.setString(plainText, forType: .string)
             return
         }
-        let items = Dictionary(grouping: reps, by: \.item).sorted { $0.key < $1.key }.map { _, reps in
+        pasteboard.writeObjects(items(reps))
+    }
+
+    /// The clip's pasteboard items as they were copied, every type of each.
+    static func items(_ reps: [Representation]) -> [NSPasteboardItem] {
+        Dictionary(grouping: reps, by: \.item).sorted { $0.key < $1.key }.map { _, reps in
             let item = NSPasteboardItem()
             for rep in reps {
                 item.setData(rep.data, forType: NSPasteboard.PasteboardType(rep.type))
             }
             return item
         }
-        pasteboard.writeObjects(items)
     }
 
     /// One item with plain text, and rich text when given.

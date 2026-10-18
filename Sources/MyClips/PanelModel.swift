@@ -36,10 +36,13 @@ final class PanelModel {
     @ObservationIgnored var onPaste: ([Clip], _ plainText: Bool) -> Void = { _, _ in }
     @ObservationIgnored var onCopy: ([Clip]) -> Void = { _ in }
     @ObservationIgnored private var flashTask: Task<Void, Never>?
-    @ObservationIgnored private let thumbnails = NSCache<NSNumber, NSImage>()
-    @ObservationIgnored private let store: Store
+    @ObservationIgnored let thumbnails = NSCache<NSNumber, NSImage>()
+    @ObservationIgnored let store: Store
+    /// Where each visible card is, in the shelf's SwiftUI coordinates: a drag starts on the card under the press.
+    @ObservationIgnored var cardFrames: [Int64: CGRect] = [:]
     @ObservationIgnored private var loadTask: Task<Void, Never>?
     @ObservationIgnored private var icons: [String: NSImage] = [:]
+    @ObservationIgnored private var headerColors: [String: RGB] = [:]
 
     init(store: Store) {
         self.store = store
@@ -297,5 +300,35 @@ final class PanelModel {
             try? await change(store)
             reload()
         }
+    }
+}
+
+extension PanelModel {
+    /// A card header's color for the source app: from its icon, else gray. Cached per app.
+    func headerColor(for bundleID: String?) -> RGB {
+        guard let bundleID else { return IconColor.gray }
+        if let cached = headerColors[bundleID] { return cached }
+        let color = icon(for: bundleID).flatMap(Self.iconPixels).flatMap(IconColor.pick) ?? IconColor.gray
+        headerColors[bundleID] = color
+        return color
+    }
+
+    /// The icon drawn at 128 × 128, as RGBA bytes. Premultiplied (AppKit draws into no other kind), which is the same
+    /// for the opaque pixels `IconColor` reads.
+    private static func iconPixels(_ icon: NSImage) -> [UInt8]? {
+        let side = 128
+        guard
+            let bitmap = NSBitmapImageRep(
+                bitmapDataPlanes: nil, pixelsWide: side, pixelsHigh: side, bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true,
+                isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: side * 4,
+                bitsPerPixel: 32),
+            let context = NSGraphicsContext(bitmapImageRep: bitmap)
+        else { return nil }
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = context
+        icon.draw(in: NSRect(x: 0, y: 0, width: side, height: side))
+        NSGraphicsContext.restoreGraphicsState()
+        guard let data = bitmap.bitmapData else { return nil }
+        return Array(UnsafeBufferPointer(start: data, count: side * side * 4))
     }
 }

@@ -30,7 +30,7 @@ macOS 26 asks before an app reads the clipboard programmatically. myClips needs 
 
 ## The shelf
 
-A myKit `StripPanel` (a `FloatingPanel`: a titled, non-activating `NSPanel` with the title bar hidden; see [decision 002](decisions/002-non-activating-panel.md)) along the bottom of the screen under the mouse, 40 pt from the edges. It slides in and out; before a paste it closes at once, because while it slides out it would still take the ⌘V. It takes keyboard focus **without activating myClips**, so the app you were in stays frontmost and receives the paste.
+A myKit `StripPanel` (a `FloatingPanel`: a titled, non-activating `NSPanel` with the title bar hidden; see [decision 002](decisions/002-non-activating-panel.md)) as a sheet on the bottom edge of the screen under the mouse: a full-width window over the Dock (main-menu window level), its glass panel 8 pt in. The window stays put while its content slides up and back down, so nothing shows on a display below. A card's header takes the source app's color (`IconColor`: the most common clearly colored pixel of its icon, made vivid; gray when there is none); before a paste it closes at once, because while it slides out it would still take the ⌘V. It takes keyboard focus **without activating myClips**, so the app you were in stays frontmost and receives the paste.
 
 - Keys go through one local event monitor in `PanelController.handle`; letters are matched by character so shortcuts follow the keyboard layout.
 - It closes on `Esc`, the hotkey, a paste, a click outside or another app activating — but not when the screenshot UI (`screencaptureui`) is up, so you can screenshot it. `FloatingPanel` watches the clicks and app switches; `PanelController` handles the keys.
@@ -44,3 +44,7 @@ The global shortcut is a myKit `GlobalShortcut` (Carbon's `RegisterEventHotKey`,
 1. Write the clip to the clipboard: all its stored types; or plain text; or, for several clips, one item with their texts joined plus RTFD with images in order (`MultiClip`).
 2. Record that change count so the watcher ignores it.
 3. Hide the shelf, hand focus back to the previous app if myClips somehow became active, and post `⌘V` with `CGEvent`. The key code for "v" is looked up in the current keyboard layout, so it works on Dvorak, AZERTY and others. This needs Accessibility; without it the clip simply stays on the clipboard.
+
+## Dragging
+
+A myKit `DragSource` watches mouse presses in the shelf window, so SwiftUI keeps its clicks, double-clicks and menus. A press that moves 3 pt on a card (found from the card frames the strip reports) drags that card, or the whole selection when the card is in it: every pasteboard item of every clip, with all its stored types, as one pile; each card shows as a snapshot of itself. The store is an actor, so the drag start waits for its read (milliseconds; at most a second). When the pointer leaves the shelf, the shelf slides away so the drop target behind it is visible.

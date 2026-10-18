@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.5.0 — 2026-10-18
+
+- The shelf sits on the bottom edge of the screen: full width, 8 pt in, over the Dock; it slides up and back down.
+- The main list is called Clipboard (it was History), also in Settings and the menu (Clear Clipboard…).
+- New cards: a header in the source app's color (taken from its icon) says what the clip is (Text, Link, Image, File, Color) and how old it is, with the app's icon large in its corner. Text cards show about nine lines; the size and ⌘1–⌘9 sit at the bottom. The ⏎ Paste button on the selected card is gone; Return still pastes.
+- Drag a card, or the whole selection as a stack, into any app; the shelf slides away when the pointer leaves it.
+- Sounds: one when a clip is saved, one when you paste. Pick each in Settings, also from your own `~/Library/Sounds`, or turn them off.
+
 ## 0.4.0 — 2026-10-15
 
 - A new look, shared with myCapture: the shelf is a glass strip 40 pt from the screen edges that slides in and out. Each card shows the clip in a rounded box with the source app's icon at its corner; under it the time and ⌘1–⌘9, or **⏎ Paste** on the card the keys act on. The selection is an accent ring.

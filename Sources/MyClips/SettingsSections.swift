@@ -12,10 +12,17 @@ struct SettingsSections: View {
             LabeledContent("Open myClips") { ShortcutRecorder(app.openShortcut) }
             LaunchAtLoginToggle()
             Toggle("Pause capture", isOn: $app.paused)
-            Picker("Keep history", selection: $app.historyLimit) {
+            Picker("Keep in Clipboard", selection: $app.historyLimit) {
                 ForEach(AppModel.historySizes, id: \.self) { Text("\($0.formatted()) clips").tag($0) }
             }
             Text("Pinned clips and pinboards are always kept.").font(.textCaption).foregroundStyle(.secondary)
+        }
+
+        Section("Sounds") {
+            Toggle("Play sounds", isOn: $app.playsSounds)
+            SoundPicker(title: "When a clip is saved", selection: $app.saveSound, sounds: app.sounds)
+            SoundPicker(title: "When clips are pasted", selection: $app.pasteSound, sounds: app.sounds)
+            Text("Lists the sounds in ~/Library/Sounds and the macOS sounds.").font(.textCaption).foregroundStyle(.secondary)
         }
 
         Section {
@@ -39,8 +46,8 @@ struct SettingsSections: View {
             Text("Nothing copied in these apps is recorded. Content that password managers mark as concealed is always skipped.")
         }
 
-        Section("History") {
-            Button("Clear History…", role: .destructive) { app.clearHistory() }
+        Section("Clipboard") {
+            Button("Clear Clipboard…", role: .destructive) { app.clearHistory() }
         }
 
         Section("Permissions") {
@@ -77,5 +84,21 @@ private struct AppRow<Trailing: View>: View {
                 }
             }
         }
+    }
+}
+
+/// Plays the sound on a pick, so the user hears it.
+private struct SoundPicker: View {
+    let title: String
+    @Binding var selection: String
+    let sounds: Sounds
+    @State private var names = Sounds.names()
+
+    var body: some View {
+        Picker(title, selection: $selection) {
+            // A sound picked earlier and since removed stays visible as the selection.
+            ForEach(names.contains(selection) ? names : [selection] + names, id: \.self) { Text($0).tag($0) }
+        }
+        .onChange(of: selection) { _, name in sounds.play(named: name) }
     }
 }

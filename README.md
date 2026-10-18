@@ -4,22 +4,23 @@
 
 A small clipboard manager for macOS 26, built for one person: me.
 
-![myClips: the shelf along the bottom of the screen, with a large preview of the selected image](docs/images/preview.png)
+![myClips: the shelf on the bottom edge of the screen, with a large preview of the selected clip](docs/images/preview.png)
 
 > [!NOTE]
 > **Personal project.** myClips is my own small clipboard manager, with only the features I use. The code is public in case it's useful to someone; I build it for my own Mac, so there are no releases, no roadmap and no support. **Pull requests are not accepted** — fork it and make it yours. Bug reports are welcome (see [CONTRIBUTING](CONTRIBUTING.md)).
 
 ## What it does
 
-- **History with fast search.** Every copy is kept; type to search substrings, ignoring case and accents. Typical searches take under a millisecond across 100,000 clips.
-- **A shelf at the bottom of the screen.** <kbd>✦</kbd><kbd>V</kbd> opens it over whatever you're doing (change the shortcut in Settings); <kbd>Return</kbd> pastes into the app you were in.
-- **Pinned clips and pinboards.** Pin clips to the front of history, or keep collections that never expire.
-- **Multi-select, preview, type filter.** Paste several clips at once (images included, where the target app takes rich text), preview anything large with Quick Look, filter to text, links, images or files.
+- **Clipboard with fast search.** Every copy is kept; type to search substrings, ignoring case and accents. Typical searches take under a millisecond across 100,000 clips.
+- **A shelf on the bottom edge of the screen.** <kbd>✦</kbd><kbd>V</kbd> slides it up over whatever you're doing, the Dock included (change the shortcut in Settings); <kbd>Return</kbd> pastes into the app you were in. Each card says what it holds (text, link, image, file or color), in the color of the app it came from.
+- **Pinned clips and pinboards.** Pin clips to the front of Clipboard, or keep collections that never expire.
+- **Multi-select, drag, preview, type filter.** Paste several clips at once (images included, where the target app takes rich text), or drag one card or the whole selection into any app; preview anything large with Quick Look; filter to text, links, images or files.
+- **Sounds.** A short sound when a clip is saved and when you paste; pick each one in Settings, also from your own `~/Library/Sounds`, or turn them off.
 - **Private by default.** Everything stays on your Mac in one SQLite file. No network access, no accounts, no telemetry. Password managers' concealed copies are never recorded.
 
 ### Not included, on purpose
 
-iCloud sync, sharing, AI features, an MCP server, Spotlight indexing, snippets with variables, paste stacks, themes. If you need those, use Paste.
+iCloud sync, sharing, AI features, an MCP server, Spotlight indexing, snippets with variables, paste stacks, themes. If you need those, use a full-featured clipboard manager.
 
 ## Keyboard
 
@@ -35,9 +36,9 @@ iCloud sync, sharing, AI features, an MCP server, Spotlight indexing, snippets w
 | <kbd>⌘</kbd><kbd>1</kbd>–<kbd>⌘</kbd><kbd>9</kbd>, double-click | Paste that clip |
 | <kbd>⌘</kbd><kbd>C</kbd> | Copy the selection, keep the shelf open |
 | <kbd>Space</kbd> (empty search) or <kbd>⌘</kbd><kbd>Y</kbd> | Large preview with exact copy time |
-| <kbd>⌘</kbd><kbd>P</kbd> | Pin or unpin to the front of history |
+| <kbd>⌘</kbd><kbd>P</kbd> | Pin or unpin to the front of Clipboard |
 | <kbd>⌘</kbd><kbd>K</kbd> or right-click | Actions: paste, preview, pin, add to pinboard, delete |
-| <kbd>Tab</kbd> or <kbd>⇧</kbd><kbd>Tab</kbd> | Switch between history and pinboards |
+| <kbd>Tab</kbd> or <kbd>⇧</kbd><kbd>Tab</kbd> | Switch between Clipboard and pinboards |
 | <kbd>⌘</kbd><kbd>N</kbd> | New pinboard |
 | <kbd>⌘</kbd><kbd>⌫</kbd> | Delete the selection |
 | <kbd>⌘</kbd><kbd>,</kbd> | Settings |
