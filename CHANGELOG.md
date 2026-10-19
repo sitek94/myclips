@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.2 — 2026-10-19
+
+- Closing the shelf (the shortcut again, or Esc) no longer flashes: it only slides down.
+
 ## 0.5.1 — 2026-10-18
 
 - Dragging text or an image into Finder makes a .txt or .png file (it made a clipping, or nothing for an image). Other apps still get the text or the image.
